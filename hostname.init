@@ -1,0 +1,7 @@
+# vim:ft=make:
+
+HOSTNAME?=Amnesiac
+
+hostname:
+	: Setting hostname.
+	hostname ${HOSTNAME}

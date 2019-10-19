@@ -1,3 +1,10 @@
 # vim:ft=make:
 
-ifconfig: adjkerntz
+IFCONFIG_IFACES?=lo0
+IFCONFIG_lo0?=inet 127.0.0.1/8 up
+
+ifconfig: adjkerntz wlans
+	: Starting interfaces.
+.for iface in ${IFCONFIG_IFACES}
+	ifconfig ${IFCONFIG_${iface}}
+.endfor

@@ -1,4 +1,4 @@
-.include "mrc.conf"
+.include "/etc/mrc.conf"
 
 .if defined(AUTOBOOT)
 SCRIPTS!=ls *.init *.service

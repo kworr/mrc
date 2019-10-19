@@ -1,0 +1,12 @@
+# vim:ft=make:
+
+wlans: kld
+	: Configuring wlans.
+.for dev in ${:!sysctl -n net.wlan.devices!}
+.for wlan in ${WLANS_${dev}}
+.if defined(${WLANS_${wlan}_ARGS})
+	ifconfig ${wlan} wlandev ${dev} ${WLANS_${wlan}_ARGS}
+	ifconfig ${wlan} up
+.endif
+.endfor
+.endfor
