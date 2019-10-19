@@ -1,0 +1,5 @@
+# vim:ft=make:
+
+adjkerntz: random mountlate
+	: Adjust kernel timezone.
+	adjkerntz -i
