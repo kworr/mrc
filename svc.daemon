@@ -1,4 +1,7 @@
 # vim:ft=make:
 
-daemonize: .USE DAEMON
-	svc init ${DAEMON_NAME} ${DAEMON_COMMAND}
+_daemonize: .USE DAEMON
+	svc init ${DAEMON_$@_NAME} ${DAEMON_$@_COMMAND}
+
+_service: .USE
+	svc init ${DAEMON_$@_NAME} ${DAEMON_$@_COMMAND}

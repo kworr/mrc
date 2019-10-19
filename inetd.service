@@ -1,6 +1,6 @@
 # vim:ft=make:
 
-DAEMON_NAME=inetd
-DAEMON_COMMAND=inetd -C 60
+DAEMON_inetd_NAME=inetd
+DAEMON_inetd_COMMAND=inetd -C 60
 
-inetd: daemonize
+inetd: _daemonize
