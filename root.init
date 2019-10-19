@@ -1,0 +1,6 @@
+# vim:ft=make:
+
+root: fsck
+	: Mount root R/W.
+	mount -uo rw /
+	umount -A

@@ -1,0 +1,20 @@
+# vim:ft=make:
+
+LDCONFIG_PATHS?=/lib /usr/lib /usr/local/lib /usr/pkg/lib
+LDCONFIG_LOCAL_DIRS?=/usr/local/libdata/ldconfig
+
+.for ldc in ${LDCONFIG_PATHS} /etc/ld-elf.so.conf
+.if exists(${ldc})
+ldc+=${ldc}
+.endif
+.endfor
+
+.for dir in ${LDCONFIG_PATH_DIRS}
+.if exists(${dir})
+ldc+=${:!find ${dir} -type f!}
+.endif
+.endfor
+
+ldconfig: mountlate
+	: Initializing ldconfig.
+	ldconfig -elf ${ldc}

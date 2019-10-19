@@ -3,7 +3,7 @@
 ENTROPY_FILE?=/var/db/entropy/random
 ENTROPY_DIR?=/var/db/entropy
 
-random: mount
+random: mount devfs
 	: Seeding random.
 	sysctl kern.seedenable=1 > /dev/null
 	( ps -fauxww; ${SYSCTL} -a; date; df -ib; dmesg; ps -fauxww; ) 2>&1 | dd status=none of=/dev/random bs=8k

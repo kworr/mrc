@@ -1,0 +1,6 @@
+# vim:ft=make:
+
+DAEMON_NAME=dhcpcd
+DAEMON_COMMAND=dhcpcd -B
+
+dhcpcd: daemonize

@@ -1,0 +1,6 @@
+# vim:ft=make:
+
+DAEMON_NAME=dntpd
+DAEMON_COMMAND=dntpd -F
+
+dntpd: daemonize
