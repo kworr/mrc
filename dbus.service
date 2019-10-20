@@ -1,0 +1,11 @@
+# vim:ft=make:
+
+DAEMON_dbus_COMMAND?=dbus-daemon
+DAEMON_dbus_ENABLE?=no
+DAEMON_dbus_FLAGS?=--system
+
+dbus: _daemon
+	/usr/local/bin/dbus-uuidgen --ensure
+.if !exists(/var/run/dbus)
+	mkdir -p /var/run/dbus
+.endif

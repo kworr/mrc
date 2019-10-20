@@ -1,7 +1,6 @@
 # vim:ft=make:
 
-DAEMON_syslogd_NAME=syslogd
-DAEMON_syslogd_COMMAND=-ss8cc
-DAEMON_syslogd_SYSTEM=
+DAEMON_syslogd_COMMAND?=syslogd
+DAEMON_syslogd_FLAGS?=-ss8cc
 
 syslogd: _service

@@ -1,3 +1,3 @@
 # vim:ft=make:
 
-LOGIN: DAEMON
+LOGIN: DAEMON dntpd

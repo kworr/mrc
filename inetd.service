@@ -1,6 +1,7 @@
 # vim:ft=make:
 
-DAEMON_inetd_NAME=inetd
-DAEMON_inetd_COMMAND=inetd -C 60
+DAEMON_inetd_COMMAND?=inetd
+DAEMON_inetd_enable?=no
+DAEMON_inetd_FLAGS?=-C 60
 
-inetd: _daemonize
+inetd: _daemon LOGIN

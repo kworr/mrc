@@ -1,0 +1,11 @@
+# vim:ft=make:
+
+DAEMON_watchdogd_COMMAND?=watchdogd
+DAEMON_watchdogd_ENABLE?=no
+DAEMON_watchdogd_FLAGS?=-d
+
+.if empty(${:!sysctl -qn debug.watchdog!})
+DAEMON_watchdogd_ENABLE=no
+.endif
+
+watchdogd: _daemon

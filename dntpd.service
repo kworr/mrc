@@ -1,6 +1,6 @@
 # vim:ft=make:
 
-DAEMON_dntpd_NAME=dntpd
-DAEMON_dntpd_COMMAND=dntpd -F
+DAEMON_dntpd_COMMAND?=dntpd
+DAEMON_dntpd_FLAGS?=-F
 
-dntpd: _daemonize
+dntpd: _service NETWORK

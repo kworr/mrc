@@ -17,7 +17,7 @@ DAEMON:
 
 .MAIN: ${SCRIPTS:S/.init//:S/.service//}
 
-.PHONY: ${SCRIPTS:S/.init//:S/.service//} _daemonize _service
+.PHONY: ${SCRIPTS:S/.init//:S/.service//} _daemon _service
 
 .for file in ${SCRIPTS}
 .include "${file}"

@@ -1,6 +1,7 @@
 # vim:ft=make:
 
-DAEMON_dhcpcd_NAME=dhcpcd
-DAEMON_dhcpcd_COMMAND=dhcpcd -B
+DAEMON_dhcpcd_COMMAND?=dhcpcd
+DAEMON_dhcpcd_ENABLE?=no
+DAEMON_dhcpcd_FLAGS?=-B
 
-dhcpcd: _daemonize
+dhcpcd: _service mount cleanvar ifconfig

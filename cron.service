@@ -1,0 +1,6 @@
+# vim:ft=make:
+
+DAEMON_cron_COMMAND?=cron
+DAEMON_cron_FLAGS?=-s
+
+cron: _service LOGIN

@@ -1,0 +1,12 @@
+# vim:ft=make:
+
+DAEMON_smartd_COMMAND?=smartd
+DAEMON_smartd_ENABLE?=no
+DAEMON_smartd_FLAGS?=-c /usr/local/etc/smartd.conf -n
+
+.if !exists(/usr/local/etc/smartd.conf)
+DAEMON_smartd_ENABLE=no
+.info smartd requires config file to start
+.endif
+
+smartd: _daemon
