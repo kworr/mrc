@@ -5,6 +5,6 @@ DAEMON_smartd_ENABLE?=no
 DAEMON_smartd_FLAGS?=-c /usr/local/etc/smartd.conf -n
 
 smartd: _daemon
-	test -d /usr/local/etc/smartd.conf || { \
+	test -f /usr/local/etc/smartd.conf || { \
 	  echo smartd requires config file to start. ; \
-	  exit 0 ; }
+	  exit 0 ; } \
