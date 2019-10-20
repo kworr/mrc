@@ -4,7 +4,7 @@
 DAEMONIZER?=svc.daemon
 
 #.MAKE.JOBS?=2
-#.SILENT:
+.SILENT:
 
 .include "${DAEMONIZER}"
 
@@ -22,7 +22,7 @@ SCRIPTS=${:!find /etc/mrc -name '*.service'!:S/\/etc\/mrc\///}
 DAEMON:
 .endif
 
-TARGETS=${SCRIPTS:S/.init//:S/.service//}
+TARGETS:=${SCRIPTS:S/.init//:S/.service//}
 
 .MAIN: ${TARGETS}
 

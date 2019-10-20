@@ -1,11 +1,11 @@
 # vim:ft=make:
 
 _daemon: DAEMON .USE
-.if empty(${DAEMON_$@_ENABLE:tl:Mno})
+.if empty(DAEMON_$@_ENABLE:tl:Mno)
 	svc -u ${DAEMON_$@_USER:Uroot} -g ${DAEMON_$@_GROUP:Uwheel} init $@ ${DAEMON_$@_COMMAND} ${DAEMON_$@_FLAGS}
 .endif
 
 _service: .USE
-.if empty(${DAEMON_$@_ENABLE:tl:Mno})
+.if empty(DAEMON_$@_ENABLE:tl:Mno)
 	svc -u ${DAEMON_$@_USER:Uroot} -g ${DAEMON_$@_GROUP:Uwheel} init $@ ${DAEMON_$@_COMMAND} ${DAEMON_$@_FLAGS}
 .endif

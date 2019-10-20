@@ -8,6 +8,4 @@ DAEMON_node_exporter_USER?=nobody
 DAEMON_node_exporter_GROUP?=nobody
 
 node_exporter: _daemon
-.if !exists(DAEMON_node_exporter_TEXTFILE_DIR)
 	install -d -o ${DAEMON_node_exporter_USER} -g ${DAEMON_node_exporter_GROUP} -m1755 ${DAEMON_node_exporter_TEXTFILE_DIR}
-.endif

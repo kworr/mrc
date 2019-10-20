@@ -3,7 +3,7 @@
 DUMPDEV?=no
 
 dumpon: random
-.if empty(${DUMPDEV:tl:Mno})
+.if empty(DUMPDEV:tl:Mno)
 	: Setting dumpon device.
-	: dumpon -v ${DUMPDEV}
+	dumpon -v ${DUMPDEV}
 .endif
