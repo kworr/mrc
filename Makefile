@@ -4,7 +4,7 @@
 DAEMONIZER?=svc.daemon
 
 #.MAKE.JOBS?=2
-.SILENT:
+#.SILENT:
 
 .include "${DAEMONIZER}"
 

@@ -1,5 +1,5 @@
 # vim:ft=make:
 
-mountlate: NETWORK mount cleanvar
+mountlate: NETWORK mount cleanvar runshm
 	: Mount late FS.
 	mount -a

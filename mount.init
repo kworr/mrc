@@ -7,5 +7,3 @@ excludes=${NETFS_TYPES:C/:.*//}
 mount: root
 	: Mount local FS.
 	mount -a -t no${excludes:ts,}
-	mount_tmpfs -m 01777 dummy /var/run/shm
-	mkdir -p -m 01777 /var/run/shm/tmp
