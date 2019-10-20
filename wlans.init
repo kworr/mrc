@@ -2,11 +2,11 @@
 
 wlans: kld
 	: Configuring wlans.
-.for dev in ${:!sysctl -n net.wlan.devices!}
-.for wlan in ${WLANS_${dev}}
-.if defined(${WLANS_${wlan}_ARGS})
-	ifconfig ${wlan} wlandev ${dev} ${WLANS_${wlan}_ARGS}
-	ifconfig ${wlan} up
-.endif
-.endfor
-.endfor
+	for dev in `sysctl -n net.wlan.devices`; do \
+	  eval all_wlans=\$${WLANS_$${dev}}; \
+	  for wlan in $${all_wlans}; do \
+	    eval wlan_args=\$${WLANS_$${wlan}_ARGS}; \
+	    ifconfig $${wlan} create wlandev $${dev} $${wlan_args}; \
+	    ifconfig $${wlan} up; \
+	  done; \
+	done

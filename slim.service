@@ -1,9 +1,7 @@
 # vim:ft=make:
 
-DAEMON_slim_COMMAND?=slim
+DAEMON_slim_COMMAND?=/usr/local/bin/slim
 DAEMON_slim_ENABLE?=no
 
 slim: _daemon
-.if exists(/var/run/slim.auth)
 	rm -f /var/run/slim.auth
-.endif

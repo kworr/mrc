@@ -4,6 +4,6 @@ CLEANVAR_DIRS?=/var/run /var/spool/lock /var/spool/uucp/.Temp
 
 cleanvar: mount
 .for dir in ${CLEANVAR_DIRS}
-	find ${dir} -mindepth 1 -delete
+	test -d ${dir} && find ${dir} -mindepth 1 -delete
 .endfor
 	install -m644 /dev/null /var/run/utmpx

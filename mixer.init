@@ -6,6 +6,6 @@ mixer: mount cleanvar
 	: Restoring mixer levels.
 .for mixer in ${mixers}
 .if exists(/var/db/${mixer}-state)
-	mixer -f ${mixer} `cat /var/db/${mixer}-state`
+	mixer -f /dev/${mixer} `cat /var/db/${mixer}-state`
 .endif
 .endfor

@@ -1,6 +1,6 @@
 # vim:ft=make:
 
-DMESG_FILE?=/var/run/dmesg/boot
+DMESG_FILE?=/var/run/dmesg.boot
 
 dmesg: mountlate
 	: Writing dmesg.

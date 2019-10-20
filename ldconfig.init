@@ -9,7 +9,7 @@ ldc+=${ldc}
 .endif
 .endfor
 
-.for dir in ${LDCONFIG_PATH_DIRS}
+.for dir in ${LDCONFIG_LOCAL_DIRS}
 .if exists(${dir})
 ldc+=${:!find ${dir} -type f!}
 .endif

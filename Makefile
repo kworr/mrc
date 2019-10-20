@@ -1,16 +1,17 @@
 .include "/etc/mrc.conf"
+.export
 
 DAEMONIZER?=svc.daemon
 
-.MAKE.JOBS?=2
+#.MAKE.JOBS?=2
 .SILENT:
 
 .include "${DAEMONIZER}"
 
 .if defined(AUTOBOOT)
-SCRIPTS!=ls *.init *.service
+SCRIPTS=${:!find /etc/mrc -name '*.init' -o -name '*.service'!:S/\/etc\/mrc\///}
 .else
-SCRIPTS!=ls *.service
+SCRIPTS=${:!find /etc/mrc -name '*.service'!:S/\/etc\/mrc\///}
 
 DAEMON:
 .endif

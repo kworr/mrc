@@ -1,6 +1,6 @@
 # vim:ft=make:
 
-root: fsck
+root: fsck bootfs
 	: Mount root R/W.
 	mount -uo rw /
-	umount -A
+	umount -a
