@@ -1,7 +1,0 @@
-# vim:ft=make:
-
-DMESG_FILE?=/var/run/dmesg.boot
-
-dmesg: mountlate
-	: Writing dmesg.
-	umask 022 ; dmesg -a >> ${DMESG_FILE}

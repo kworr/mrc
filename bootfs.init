@@ -1,5 +1,0 @@
-# vim:ft=make:
-
-bootfs: fsck
-	: Checking whether we need /boot mounted.
-	mount -vadr | grep -q ' /boot$$' && mount -r /boot || true

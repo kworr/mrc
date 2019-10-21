@@ -1,6 +1,0 @@
-# vim:ft=make:
-
-cloned: kld
-.for iface in ${CLONED_INTERFACES}
-	ifconfig ${iface} create
-.endfor

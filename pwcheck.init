@@ -1,7 +1,0 @@
-# vim:ft=make:
-
-pwcheck: mountlate syslogd
-	: Checking password lock file.
-.if exists(/etc/ptmp)
-	logger -s -p auth.err "password file may be incorrect -- /etc/ptmp exists"
-.endif

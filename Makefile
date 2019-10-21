@@ -13,10 +13,10 @@ STARTER?=svc
 .endif
 
 #.MAKE.JOBS?=2
-#.SILENT:
+.SILENT:
 
 .if defined(AUTOBOOT)
-SCRIPTS=${:!find /etc/mrc -name '*.init' -o -name '*.service'!:S/\/etc\/mrc\///}
+SCRIPTS=${:!find /etc/mrc -name '*.init.mk' -o -name '*.service.mk'!:S/\/etc\/mrc\///}
 
 .ERROR:
 	: ERROR: ABORTING BOOT (sending SIGTERM to parent)!
@@ -24,7 +24,7 @@ SCRIPTS=${:!find /etc/mrc -name '*.init' -o -name '*.service'!:S/\/etc\/mrc\///}
 	: ${.ERROR_CMD}
 	kill 1
 .else
-SCRIPTS=${:!find /etc/mrc -name '*.service'!:S/\/etc\/mrc\///}
+SCRIPTS=${:!find /etc/mrc -name '*.service.mk'!:S/\/etc\/mrc\///}
 
 DAEMON: NETWORK SERVERS
 
@@ -40,7 +40,7 @@ SERVICE:
 test:
 	echo Empty target.
 
-TARGETS:=${SCRIPTS:S/.init//:S/.service//}
+TARGETS:=${SCRIPTS:S/.init.mk//:S/.service.mk//}
 
 .MAIN: ${TARGETS}
 

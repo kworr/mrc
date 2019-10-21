@@ -1,7 +1,0 @@
-# vim:ft=make:
-
-DUMPDEV?=no
-
-dumpon: random
-	: Setting dumpon device.
-	test -e ${DUMPDEV} && dumpon -v ${DUMPDEV} || true

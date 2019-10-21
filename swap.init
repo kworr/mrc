@@ -1,7 +1,0 @@
-# vim:ft=make:
-
-swap: savecore
-.if ${:!sysctl -n vm.swap_enabled!}} != 0
-	: Enabling swap.
-	swapon -a
-.endif

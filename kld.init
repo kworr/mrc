@@ -1,6 +1,0 @@
-# vim:ft=make:
-
-kld: bootfs
-.if defined(KLD_LIST)
-	kldload -n ${KLD_LIST}
-.endif

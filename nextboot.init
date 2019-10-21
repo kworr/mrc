@@ -1,7 +1,0 @@
-# vim:ft=make:
-
-nextboot: mount
-.if exists(/boot/nextkernel)
-	: Removing nextboot setting.
-	rm -f /boot/nextkernel
-.endif

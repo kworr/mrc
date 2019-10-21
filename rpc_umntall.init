@@ -1,7 +1,0 @@
-# vim:ft=make:
-
-rpc_umntall: mountlate NETWORK rpcbind
-.if empty(RPC_UMNTALL_ENABLE:tl:Mno)
-	test -f /var/db/mounttab || true && \
-	  rpc.umntall -k &
-.endif
