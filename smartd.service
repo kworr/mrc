@@ -5,6 +5,9 @@ DAEMON_smartd_ENABLE?=no
 DAEMON_smartd_FLAGS?=-c /usr/local/etc/smartd.conf -n
 
 smartd: _daemon
+.export DAEMON_$@_ENABLE
+	test -z "$${DAEMON_$@_ENABLE}" || \
 	test -f /usr/local/etc/smartd.conf || { \
 	  echo smartd requires config file to start. ; \
-	  exit 0 ; } \
+	  false; \
+	}

@@ -5,5 +5,8 @@ DAEMON_dbus_ENABLE?=no
 DAEMON_dbus_FLAGS?=--system
 
 dbus: _daemon
-	/usr/local/bin/dbus-uuidgen --ensure
-	mkdir -p /var/run/dbus
+.export DAEMON_$@_ENABLE
+	test -z "$${DAEMON_$@_ENABLE}" || { \
+	  /usr/local/bin/dbus-uuidgen --ensure; \
+	  mkdir -p /var/run/dbus; \
+	}
