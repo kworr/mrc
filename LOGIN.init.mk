@@ -1,1 +1,1 @@
-LOGIN: DAEMON dntpd
+LOGIN: DAEMON dntpd msgs powerd

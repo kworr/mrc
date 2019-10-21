@@ -1,1 +1,1 @@
-SERVERS: swap mountlate syslogd
+SERVERS: swap mountlate syslogd newsyslog

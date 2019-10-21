@@ -1,1 +1,1 @@
-DAEMON: pwcheck sysctl sysdb NETWORK SERVERS ldconfig nfsclient
+DAEMON: pwcheck sysctl sysdb NETWORK SERVERS ldconfig nfsclient cleartmp
