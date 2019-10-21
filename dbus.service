@@ -4,7 +4,7 @@ DAEMON_dbus_COMMAND?=/usr/local/bin/dbus-daemon
 DAEMON_dbus_ENABLE?=no
 DAEMON_dbus_FLAGS?=--system
 
-dbus: _daemon
+dbus: _service
 .export DAEMON_$@_ENABLE
 	test -z "$${DAEMON_$@_ENABLE}" || { \
 	  /usr/local/bin/dbus-uuidgen --ensure; \

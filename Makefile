@@ -1,15 +1,15 @@
 .include "/etc/mrc.conf"
 .export
 
-OTHER_TARGETS:=_daemon _service
-DAEMONIZER?=svc
+OTHER_TARGETS:=_service _earlyservice
+STARTER?=svc
 
-.for daemonizer in ${:!find /etc/mrc -name '*.daemon.mk'!:S/\/etc\/mrc\///}
-.include "${daemonizer}"
+.for starter in ${:!find /etc/mrc -name '*.starter.mk'!:S/\/etc\/mrc\///}
+.include "${starter}"
 .endfor
 
-.if !target(_daemon) || !target(_service)
-.error No daemonizer defined.
+.if !target(_service) || !target(_earlyservice)
+.error No service handler defined.
 .endif
 
 #.MAKE.JOBS?=2
@@ -59,7 +59,7 @@ ENABLED=${:!env!:C/=.*//:M*_ENABLE}
 
 .for var in ${ENABLED}
 .if !empty(${var}:tl:Mno)
-.info ${var}
+#.info ${var}
 .undef ${var}
 .endif
 .endfor
@@ -67,4 +67,4 @@ ENABLED=${:!env!:C/=.*//:M*_ENABLE}
 .undef ENABLED
 .unexport-env
 .export
-.info ${:!env!}
+#.info ${:!env!}

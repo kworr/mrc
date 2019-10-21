@@ -8,4 +8,4 @@ DAEMON_watchdogd_FLAGS?=-d
 DAEMON_watchdogd_ENABLE=no
 .endif
 
-watchdogd: _daemon
+watchdogd: _earlyservice
