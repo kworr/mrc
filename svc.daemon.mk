@@ -5,7 +5,7 @@ LOCAL_TARGETS:=${LOCAL_TARGETS} ${LOCAL_TARGETS:S/_svc//}
 .endif
 
 .for target in ${LOCAL_TARGETS}
-${target}: ${target:M_daemon:DDAEMON} .USE
+${target}: ${target:C/_daemon.*/DAEMON/:C/_service.*/SERVICE/} .USE
 #.export DAEMON_$@_ENABLE
 	env | grep $@
 	test -z "$${DAEMON_$@_ENABLE}" || { \

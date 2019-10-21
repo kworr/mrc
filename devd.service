@@ -5,5 +5,4 @@ DAEMON_devd_ENABLE?=yes
 DAEMON_devd_FLAGS?=-dq
 
 devd: _service
-.export DAEMON_$@_ENABLE
-	test -z "$${DAEMON_$@_ENABLE}" || sysctl hw.bus.devctl_disable=1
+	test -n "$${DAEMON_$@_ENABLE}" || sysctl hw.bus.devctl_disable=1

@@ -4,6 +4,6 @@ DAEMON_automountd_COMMAND?=/usr/sbin/autmountd
 DAEMON_automountd_ENABLE?=no
 DAEMON_automountd_MODULES=autofs
 
-automountd: _daemon nfsclient
+automountd: _daemon # nfsclient -> DAEMON
 .export DAEMON_$@_ENABLE
 	test -z "$${DAEMON_$@_ENABLE}" || /usr/sbin/automount

@@ -34,14 +34,11 @@ NETWORK:
 
 SERVERS:
 
-mountlate: mount cleanvar
-
-mount:
-
-cleanvar: mount
-
-nfsclient: NETWORK
+SERVICE:
 .endif
+
+test:
+	echo Empty target.
 
 TARGETS:=${SCRIPTS:S/.init//:S/.service//}
 
@@ -52,7 +49,7 @@ TARGETS:=${SCRIPTS:S/.init//:S/.service//}
 .undef TARGETS OTHER_TARGETS
 
 .for file in ${SCRIPTS}
-.info ${file}
+#.info ${file}
 .include "${file}"
 .endfor
 
@@ -62,10 +59,12 @@ ENABLED=${:!env!:C/=.*//:M*_ENABLE}
 
 .for var in ${ENABLED}
 .if !empty(${var}:tl:Mno)
-#.info ${var}
+.info ${var}
 .undef ${var}
-.unexport ${var}
 .endif
 .endfor
 
 .undef ENABLED
+.unexport-env
+.export
+.info ${:!env!}
