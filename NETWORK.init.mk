@@ -1,1 +1,0 @@
-NETWORK: ifconfig devd hostname

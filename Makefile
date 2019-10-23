@@ -18,17 +18,15 @@ STARTER?=svc
 install:
 	install rc /etc/rc
 
-.if defined(AUTOBOOT)
-SCRIPTS=${:!find /etc/mrc -name '*.init.mk' -o -name '*.service.mk'!:S/\/etc\/mrc\///}
+SCRIPTS=${:!find /etc/mrc -name '*.service.mk'!:S/\/etc\/mrc\///}
 
+.if defined(AUTOBOOT)
 .ERROR:
 	: ERROR: ABORTING BOOT (sending SIGTERM to parent)!
 	: target ${.ERROR_TARGET} failed to execute:
 	: ${.ERROR_CMD}
 	kill 1
 .else
-SCRIPTS=${:!find /etc/mrc -name '*.service.mk'!:S/\/etc\/mrc\///}
-
 DAEMON: NETWORK SERVERS
 
 LOGIN: DAEMON
@@ -45,18 +43,18 @@ test:
 
 TARGETS:=${SCRIPTS:S/.init.mk//:S/.service.mk//}
 
-.MAIN: ${TARGETS}
-
-.PHONY: ${TARGETS} ${OTHER_TARGETS}
-
-.undef TARGETS OTHER_TARGETS
-
 .for file in ${SCRIPTS}
 #.info ${file}
 .include "${file}"
 .endfor
 
-.undef SCRIPTS
+.include "init.mk"
+
+.MAIN: ${TARGETS}
+
+.PHONY: ${TARGETS} ${OTHER_TARGETS}
+
+.undef TARGETS OTHER_TARGETS SCRIPTS
 
 ENABLED=${:!env!:C/=.*//:M*_ENABLE}
 
