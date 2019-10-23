@@ -1,3 +1,4 @@
+.include "defaults.mk"
 .include "/etc/mrc.mk"
 .export
 

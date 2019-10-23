@@ -22,8 +22,6 @@ bootfs: fsck
 	echo "MRC:$@> Checking whether we need /boot mounted."
 	mount -vadr | grep -q ' /boot$$' && mount -r /boot || true
 
-CLEANVAR_DIRS?=/var/run /var/spool/lock /var/spool/uucp/.Temp
-
 cleanvar: mount
 	echo "MRC:$@> Cleaning 'var's."
 .for dir in ${CLEANVAR_DIRS}
@@ -42,12 +40,12 @@ cleartmp: mountlate
 	  mkdir -m 1777 /tmp/.X11-unix
 
 cloned: kld
+.if !empty(CLONED_INTERFACES)
 	echo "MRC:$@> Cloning interfaces: ${CLONED_INTERFACES}"
 .for iface in ${CLONED_INTERFACES}
 	ifconfig ${iface} create
 .endfor
-
-DEVFS_CONFIG_FILES?=/etc/defaults/devfs.conf /etc/devfs.conf
+.endif
 
 devfs:
 	echo "MRC:$@> Applying rules: ${DEVFS_CONFIG_FILES}"
@@ -57,19 +55,19 @@ devfs:
 .endif
 .endfor
 
-DMESG_FILE?=/var/run/dmesg.boot
-
 dmesg: mountlate
+.if !empty(DMESG_FILE)
 	echo "MRC:$@> Writing dmesg."
 	umask 022 ; dmesg -a >> ${DMESG_FILE}
-
-DUMPDEV?=no
+.endif
 
 dumpon: random
+.if !empty(DUMPDEV)
 	test -e ${DUMPDEV} && { \
 	  echo "MRC:$@> Setting dumpon device to ${DUMPDEV}"; \
 	  dumpon -v ${DUMPDEV}; \
 	} || true
+.endif
 
 fsck:
 	echo "MRC:$@> Checking disks." ;\
@@ -104,14 +102,9 @@ fsck:
 	   ;; \
 	esac
 
-HOSTNAME?=Amnesiac
-
 hostname:
 	echo "MRC:$@> Setting to ${HOSTNAME}."
 	hostname ${HOSTNAME}
-
-IFCONFIG_IFACES?=lo0
-IFCONFIG_lo0?=inet 127.0.0.1/8 up
 
 ifconfig: adjkerntz wlans cloned kld
 	echo "MRC:$@> Starting interfaces: ${IFCONFIG_IFACES}"
@@ -127,9 +120,6 @@ kld: bootfs
 	echo "MRC:$@> Loading kernel modules: ${KLD_LIST}"
 	kldload -n ${KLD_LIST}
 .endif
-
-LDCONFIG_PATHS?=/lib /usr/lib /usr/local/lib /usr/pkg/lib
-LDCONFIG_LOCAL_DIRS?=/usr/local/libdata/ldconfig
 
 .for path in ${LDCONFIG_PATHS} /etc/ld-elf.so.conf
 .if exists(${path})
@@ -155,8 +145,6 @@ mixer: mount cleanvar
 	-test -f /var/db/${mixer}-state && mixer -f /dev/${mixer} `cat /var/db/${mixer}-state`
 .endfor
 
-NETFS_TYPES?=nfs:NFS smbfs:SMB
-
 excludes=${NETFS_TYPES:C/:.*//}
 
 mount: root
@@ -172,8 +160,6 @@ msgs: mount
 	  test ! -d /var/msgs -o -f /var/msgs/bound -o -L /var/msgs/bounds || \
 	  echo 0 > /var/msgs/bounds
 
-NEWSYSLOG_ENABLE?=no
-
 newsyslog: mountlate sysdb
 	test -z "$${NEWSYSLOG_ENABLE}" || \
 	  echo "MRC:$@> Trimming log files." ;\
@@ -184,8 +170,6 @@ nextboot: mount
 	echo "MRC:$@> Removing nextboot setting."
 	rm -f /boot/nextkernel
 .endif
-
-NFSCLIENT_ENABLE?=no
 
 .if empty(NFSCLIENT_ENABLE:tl:Mno)
 DAEMON_rpcbind_ENABLE=yes
@@ -200,15 +184,12 @@ pwcheck: mountlate syslogd
 	logger -s -p auth.err "password file may be incorrect -- /etc/ptmp exists"
 .endif
 
-ENTROPY_FILE?=/var/db/entropy/random
-ENTROPY_DIR?=/var/db/entropy
-
 random: mount devfs
 	echo "MRC:$@> Seeding."
 	sysctl kern.seedenable=1 > /dev/null
-	( ps -fauxww; ${SYSCTL} -a; date; df -ib; dmesg; ps -fauxww; ) 2>&1 | dd status=none of=/dev/random bs=8k
+	( ps -fauxww; sysctl -a; date; df -ib; dmesg; ps -fauxww; ) 2>&1 | dd status=none of=/dev/random bs=8k
 	cat /bin/ls | dd status=none of=/dev/random bs=8k
-.if exists(ENTROPY_DIR)
+.if exists(ENTROPY_DIR) # XXX
 .for file in ${:!find ${ENTROPY_DIR} -type f!}
 	dd status=none if=${file} of=/dev/random bs=8k
 .endfor
@@ -223,7 +204,7 @@ root: fsck bootfs
 	umount -a
 
 rpc_umntall: mountlate NETWORK rpcbind
-.if empty(RPC_UMNTALL_ENABLE:tl:Mno)
+.if empty(RPC_UMNTALL_ENABLE:tl:Mno) # XXX
 	echo "MRC:$@> Sending RPC unmount notifications."; \
 	test -f /var/db/mounttab || true && \
 	  rpc.umntall -k &
@@ -234,9 +215,6 @@ runshm: cleanvar
 	mkdir -p /var/run/shm; \
 	mount_tmpfs -m 01777 dummy /var/run/shm; \
 	mkdir -p -m 01777 /var/run/shm/tmp; \
-
-DUMPDIR?=/var/crash
-CRASHINFO_ENABLE?=no
 
 savecore: dumpon
 .if empty(DUMPDEV:tl:Mno) && exists(${DUMPDEV}) && exists(${DUMPDIR})
