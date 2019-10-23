@@ -15,6 +15,9 @@ STARTER?=svc
 #.MAKE.JOBS?=2
 .SILENT:
 
+install:
+	install rc /etc/rc
+
 .if defined(AUTOBOOT)
 SCRIPTS=${:!find /etc/mrc -name '*.init.mk' -o -name '*.service.mk'!:S/\/etc\/mrc\///}
 

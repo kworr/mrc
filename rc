@@ -1,0 +1,16 @@
+#!/sbin/sh -Tue -
+
+stty status '^T'
+
+trap : 2
+
+HOME=/
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+export PATH HOME
+
+make -D AUTOBOOT -C /etc/mrc
+
+echo ''
+date
+exit 0
