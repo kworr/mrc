@@ -1,4 +1,4 @@
-.include "/etc/mrc.conf"
+.include "/etc/mrc.mk"
 .export
 
 OTHER_TARGETS:=_service _earlyservice
