@@ -25,7 +25,7 @@ bootfs: fsck
 cleanvar: mount
 	echo "MRC:$@> Cleaning 'var's."
 .for dir in ${CLEANVAR_DIRS}
-	-test -d ${dir} && find ${dir} -mindepth 1 -delete
+	test -d ${dir} && find ${dir} -mindepth 1 -delete || true
 .endfor
 	install -m644 /dev/null /var/run/utmpx
 
