@@ -47,6 +47,9 @@ TARGETS:=${SCRIPTS:S/.init.mk//:S/.service.mk//}
 .for file in ${SCRIPTS}
 #.info ${file}
 .include "${file}"
+.if !target(${file:S/.service.mk//})
+${file:S/.service.mk//}: _service
+.endif
 .endfor
 
 .include "init.mk"

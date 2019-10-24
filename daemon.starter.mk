@@ -9,7 +9,7 @@ ${target}: ${target:C/_service.*/DAEMON/:C/_earlyservice.*/SERVICE/} .USE
 	test -z "$${DAEMON_$@_ENABLE}" || { \
 	  echo "MRC:$@> Starting service."; \
 	  test -n "${DAEMON_$@_MODULES}" && kldload -n ${DAEMON_$@_MODULES} || true; \
-	  daemon -c -u ${DAEMON_$@_USER:Uroot} -r -P /var/run/daemon.$@.pid ${DAEMON_$@_COMMAND} ${DAEMON_$@_FLAGS}; \
+	  daemon -c -u ${DAEMON_$@_USER:Uroot} -r -P /var/run/daemon.$@.pid ${DAEMON_$@_COMMAND} ${DAEMON_$@_FLAGS} ${DAEMON$@_FOREGROUND}; \
 	}
 .endfor
 
