@@ -7,5 +7,5 @@ smartd: _service
 	test -z "$${DAEMON_$@_ENABLE}" || \
 	test -f /usr/local/etc/smartd.conf || { \
 	  echo "MRC:$@> smartd requires config file to start." ; \
-	  false; \
+	  exit 1; \
 	}
