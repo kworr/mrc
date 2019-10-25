@@ -3,7 +3,7 @@
 TARGETS+=adjkerntz bootfs cleanvar cleartmp cloned devfs dmesg dumpon fsck \
 	hostname kld ldconfig microcode mixer mount mountlate msgs netif \
 	newsyslog nextboot nfsclient pf pwcheck random root rpc_umntall runshm \
-	savecore swap sysctl sysdb wlans
+	savecore swap sysctl sysdb wlans zfs
 
 DAEMON: pwcheck sysctl sysdb NETWORK SERVERS ldconfig nfsclient cleartmp pflogd
 
@@ -154,7 +154,7 @@ mixer: mount cleanvar
 
 excludes=${NETFS_TYPES:C/:.*//}
 
-mount: root
+mount: root zfs
 	echo "MRC:$@> Mount local FS."
 	mount -a -t no${excludes:ts,}
 
@@ -283,3 +283,10 @@ wlans: kld
 	    ifconfig $${wlan} up; \
 	  done; \
 	done
+
+zfs:
+.if empty(ZFS_ENABLE:tl:Mno)
+	zfs mount -va || exit $$? ;\
+	zfs share -a || exit $$? ;\
+	test -r /etc/zfs/exports || touch /etc/zfs/exports
+.endif

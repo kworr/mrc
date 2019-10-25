@@ -55,3 +55,6 @@ RPC_UMNTALL_ENABLE?=no
 # savecore
 CRASHINFO_ENABLE?=no
 DUMPDIR?=/var/crash
+
+# zfs
+ZFS_ENABLE?=no
