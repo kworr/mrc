@@ -145,8 +145,9 @@ microcode: mountlate
 	echo "MRC:$@> Updating." ;\
 	kldload -n cpuctl || exit 1 ;\
 	for cpu in $$(jot "$$(sysctl -n hw.ncpu)" 0); do \
-	  cpucontrol -u -d /usr/local/share/cpucontrol /dev/cpuctl$${cpu} || \
-	    exit 1 ;\
+	  ( cpucontrol -u -d /usr/local/share/cpucontrol /dev/cpuctl$${cpu} \
+	      || exit 1 \
+	  ) | grep -v '^TEST' ;\
 	  cpucontrol -e /dev/cpuctl$${cpu} || exit 1 ;\
 	done
 .endif
