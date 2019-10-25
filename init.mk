@@ -1,19 +1,19 @@
 # Meta targets
 
 TARGETS+=adjkerntz bootfs cleanvar cleartmp cloned devfs dmesg dumpon fsck \
-	hostname ifconfig kld ldconfig microcode mixer mount mountlate msgs \
-	newsyslog nextboot nfsclient pwcheck random root rpc_umntall runshm \
+	hostname kld ldconfig microcode mixer mount mountlate msgs netif \
+	newsyslog nextboot nfsclient pf pwcheck random root rpc_umntall runshm \
 	savecore swap sysctl sysdb wlans
 
-DAEMON: pwcheck sysctl sysdb NETWORK SERVERS ldconfig nfsclient cleartmp
+DAEMON: pwcheck sysctl sysdb NETWORK SERVERS ldconfig nfsclient cleartmp pflogd
 
-LOGIN: DAEMON dntpd msgs powerd
+LOGIN: DAEMON dntpd msgs powerd pflogd
 
-NETWORK: ifconfig devd hostname
+NETWORK: netif devd hostname
 
 SERVERS: swap mountlate syslogd newsyslog
 
-SERVICE: ifconfig mount random hostname cleanvar
+SERVICE: netif mount random hostname cleanvar
 
 # regular targets
 
@@ -109,15 +109,6 @@ hostname:
 	echo "MRC:$@> Setting to ${HOSTNAME}."
 	hostname ${HOSTNAME}
 
-ifconfig: adjkerntz wlans cloned kld
-	echo "MRC:$@> Starting interfaces: ${IFCONFIG_IFACES}"
-.for iface in ${IFCONFIG_IFACES}
-.for item in ${IFCONFIG_${iface}:tW:ts;}
-	ifconfig ${iface} ${item}
-.endfor
-.undef _IFCONFIG_ARGS
-.endfor
-
 kld: bootfs
 .if defined(KLD_LIST)
 	echo "MRC:$@> Loading kernel modules: ${KLD_LIST}"
@@ -194,6 +185,28 @@ DAEMON_rpcbind_ENABLE=yes
 nfsclient: NETWORK rpcbind rpc_umntall
 	test -z "$${NFSCLIENT_ENABLE}" || kldload -n nfs
 
+netif: adjkerntz wlans cloned kld
+	echo "MRC:$@> Starting interfaces: ${IFCONFIG_IFACES}"
+.for iface in ${IFCONFIG_IFACES}
+.for item in ${IFCONFIG_${iface}:tW:ts;}
+	ifconfig ${iface} ${item}
+.endfor
+.undef _IFCONFIG_ARGS
+.endfor
+
+pf: pflogd
+.if empty(PF_ENABLE:tl:Mno)
+	echo "MRC:$@> Enabling and loading rules." ;\
+	kldload -n pf || exit 1 ;\
+	test -r ${PF_RULES} || {\
+	  echo "MRC:$@> Can't find file with rules at ${PF_RULES}." ;\
+	  exit 1 ;\
+	} ;\
+	pfctl -Fa || exit 1 ;\
+	pfctl -f ${PF_RULES} ${PF_FLAGS} || exit 1 ;\
+	pfctl -Si | grep -q Enabled && pfctl -e
+.endif
+
 pwcheck: mountlate syslogd
 	echo "MRC:$@> Checking password lock file."
 .if exists(/etc/ptmp)
@@ -202,18 +215,17 @@ pwcheck: mountlate syslogd
 .endif
 
 random: mount devfs
-	echo "MRC:$@> Seeding."
-	sysctl kern.seedenable=1 > /dev/null
+	echo "MRC:$@> Seeding." ;\
+	sysctl kern.seedenable=1 > /dev/null ;\
 	( ps -fauxww; sysctl -a; date; df -ib; dmesg; ps -fauxww; ) 2>&1 | \
-	  dd status=none of=/dev/random bs=8k
-	cat /bin/ls | dd status=none of=/dev/random bs=8k
-.if exists(ENTROPY_DIR) # XXX
-.for file in ${:!find ${ENTROPY_DIR} -type f!}
-	dd status=none if=${file} of=/dev/random bs=8k
-.endfor
-.elif exists(ENTROPY_FILE)
-	dd status=none if=${ENTROPY_FILE} of=/dev/random bs=8k
-.endif
+	  dd status=none of=/dev/random bs=8k ;\
+	dd if=/bin/ps status=none of=/dev/random bs=8k ;\
+	test -d $${ENTROPY_DIR} && {\
+	  find $${ENTROPY_DIR} -type f |\
+	  xargs -n1 -Ifoo dd status=none if=foo of=/dev/random bs=8k ;\
+	} || {\
+	  dd status=none if=${ENTROPY_FILE} of=/dev/random bs=8k ;\
+	} ;\
 	sysctl kern.seedenable=0 > /dev/null
 
 root: fsck bootfs
@@ -222,7 +234,7 @@ root: fsck bootfs
 	umount -a
 
 rpc_umntall: mountlate NETWORK rpcbind
-.if empty(RPC_UMNTALL_ENABLE:tl:Mno) # XXX
+.if empty(RPC_UMNTALL_ENABLE:tl:Mno)
 	echo "MRC:$@> Sending RPC unmount notifications."; \
 	test -f /var/db/mounttab || true && \
 	  rpc.umntall -k &
