@@ -1,6 +1,9 @@
 # Meta targets
 
-TARGETS+=adjkerntz bootfs cleanvar cleartmp cloned devfs dmesg dumpon fsck hostname ifconfig kld ldconfig mixer mount mountlate msgs newsyslog nextboot nfsclient pwcheck random root rpc_umntall runshm savecore swap sysctl sysdb wlans
+TARGETS+=adjkerntz bootfs cleanvar cleartmp cloned devfs dmesg dumpon fsck \
+	hostname ifconfig kld ldconfig microcode mixer mount mountlate msgs \
+	newsyslog nextboot nfsclient pwcheck random root rpc_umntall runshm \
+	savecore swap sysctl sysdb wlans
 
 DAEMON: pwcheck sysctl sysdb NETWORK SERVERS ldconfig nfsclient cleartmp
 
@@ -137,12 +140,24 @@ ldconfig: mountlate
 	echo "MRC:$@> Initializing shared libraries: ${ldc}"; \
 	ldconfig -elf ${ldc}
 
+microcode: mountlate
+.if exists(/usr/local/share/cpucontrol)
+	echo "MRC:$@> Updating." ;\
+	kldload -n cpuctl || exit 1 ;\
+	for cpu in $$(jot "$$(sysctl -n hw.ncpu)" 0); do \
+	  cpucontrol -u -d /usr/local/share/cpucontrol /dev/cpuctl$${cpu} || \
+	    exit 1 ;\
+	  cpucontrol -e /dev/cpuctl$${cpu} || exit 1 ;\
+	done
+.endif
+
 mixers=${:!find /dev -name 'mixer*'!:S/\/dev\///}
 
 mixer: mount cleanvar
 	echo "MRC:$@> Restoring levels."
 .for mixer in ${mixers}
-	-test -f /var/db/${mixer}-state && mixer -f /dev/${mixer} `cat /var/db/${mixer}-state`
+	test -f /var/db/${mixer}-state || true && mixer -f /dev/${mixer} \
+	  `cat /var/db/${mixer}-state`
 .endfor
 
 excludes=${NETFS_TYPES:C/:.*//}
@@ -181,13 +196,15 @@ nfsclient: NETWORK rpcbind rpc_umntall
 pwcheck: mountlate syslogd
 	echo "MRC:$@> Checking password lock file."
 .if exists(/etc/ptmp)
-	logger -s -p auth.err "password file may be incorrect -- /etc/ptmp exists"
+	logger -s -p auth.err "password file may be incorrect -- /etc/ptmp \
+	  exists"
 .endif
 
 random: mount devfs
 	echo "MRC:$@> Seeding."
 	sysctl kern.seedenable=1 > /dev/null
-	( ps -fauxww; sysctl -a; date; df -ib; dmesg; ps -fauxww; ) 2>&1 | dd status=none of=/dev/random bs=8k
+	( ps -fauxww; sysctl -a; date; df -ib; dmesg; ps -fauxww; ) 2>&1 | \
+	  dd status=none of=/dev/random bs=8k
 	cat /bin/ls | dd status=none of=/dev/random bs=8k
 .if exists(ENTROPY_DIR) # XXX
 .for file in ${:!find ${ENTROPY_DIR} -type f!}
@@ -234,7 +251,8 @@ swap: savecore
 sysctl: kld root
 .if exists(/etc/sysctl.conf)
 	echo "MRC:$@> Setting sysctl defaults."; \
-	awk '$$0~/^[ ]*(#.*)?$$/{next}{print}' < /etc/sysctl.conf | xargs -n1 sysctl
+	awk '$$0~/^[ ]*(#.*)?$$/{next}{print}' < /etc/sysctl.conf | \
+	  xargs -n1 sysctl
 .endif
 
 sysdb: mountlate
@@ -244,7 +262,7 @@ sysdb: mountlate
 
 wlans: kld
 	echo "MRC:$@> Configuring wlans."; \
-	for dev in `sysctl -n net.wlan.devices`; do \
+	for dev in $$(sysctl -n net.wlan.devices); do \
 	  eval all_wlans=\$${WLANS_$${dev}}; \
 	  for wlan in $${all_wlans}; do \
 	    eval wlan_args=\$${WLANS_$${wlan}_ARGS}; \
