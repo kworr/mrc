@@ -1,0 +1,38 @@
+# vim:ft=make:
+
+# command to start service
+DAEMON_example_COMMAND?=/path/service
+
+# flags to force daemonizing
+DAEMON_example_BACKGROUND?=
+
+# enabled by default?
+DAEMON_example_ENABLE?=no
+
+# general service flags
+DAEMON_example_FLAGS?=
+
+# flags to prevent daemonizing
+DAEMON_example_FOREGROUND?=
+
+# group to run service as
+DAEMON_example_GROUP?=wheel
+
+# kernel modules to load prior to service start
+DAEMON_example_MODULES?=
+
+# user to run service as
+DAEMON_example_USER?=root
+
+# extra commands to execute before starting service
+# _earlyservice - starts after root mount appear
+# _service - doesn't required for early boot
+# you also can select specific starter by inheriting class by full name:
+# _(daemon|plain|svc)_(early)?service
+example: _earlyservice
+	test -n "$${DAEMON_$@_ENABLE}" || echo service is always execute
+
+# you can't be sure whether service is enabled on the first run, when future
+# targets are only assembled, as service can be enabled later in the chain
+# somake sure to check whether service is enabled in scripts you are running
+# not in make constructs
