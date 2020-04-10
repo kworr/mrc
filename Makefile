@@ -22,6 +22,8 @@ install:
 SCRIPTS=${:!find /etc/mrc -name '*.service.mk'!:S/\/etc\/mrc\///}
 
 .if defined(AUTOBOOT)
+.include "init.mk"
+
 .ERROR:
 	: ERROR: ABORTING BOOT (sending SIGTERM to parent)!
 	: target ${.ERROR_TARGET} failed to execute:
@@ -29,20 +31,21 @@ SCRIPTS=${:!find /etc/mrc -name '*.service.mk'!:S/\/etc\/mrc\///}
 	kill 1
 .else
 DAEMON: NETWORK SERVERS
-
 LOGIN: DAEMON
-
 NETWORK:
-
 SERVERS:
-
 SERVICE:
+
+mount:
+root:
+netif:
+newsyslog:
 .endif
 
 test:
 	echo Empty target.
 
-TARGETS:=${SCRIPTS:S/.init.mk//:S/.service.mk//}
+TARGETS:=${SCRIPTS:S/.service.mk//}
 
 .for file in ${SCRIPTS}
 #.info ${file}
@@ -51,8 +54,6 @@ TARGETS:=${SCRIPTS:S/.init.mk//:S/.service.mk//}
 ${file:S/.service.mk//}: _service
 .endif
 .endfor
-
-.include "init.mk"
 
 .MAIN: ${TARGETS}
 
