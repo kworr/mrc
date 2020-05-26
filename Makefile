@@ -53,6 +53,12 @@ TARGETS:=${SCRIPTS:S/.service.mk//}
 .if !target(${file:S/.service.mk//})
 ${file:S/.service.mk//}: _service
 .endif
+.if !target(${file:S/.service.mk/_status/})
+${file:S/.service.mk/_status/}: _status
+.endif
+.if !target(${file:S/.service.mk/_restart/})
+${file:S/.service.mk/_restart/}: _restart
+.endif
 .endfor
 
 .MAIN: ${TARGETS}
