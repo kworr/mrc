@@ -1,3 +1,7 @@
+# global
+
+NCPU=${:!sysctl -n hw.ncpu!}
+
 # cleanvar
 CLEANVAR_DIRS?=/var/run /var/spool/lock /var/spool/uucp/.Temp
 
