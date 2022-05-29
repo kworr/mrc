@@ -132,16 +132,15 @@ ldconfig: mountlate
 	ldconfig -elf ${ldc}
 
 microcode: mountlate
-.if exists(/usr/local/share/cpucontrol)
-	echo "MRC:$@> Updating." ;\
+	test -d /usr/local/share/cpucontrol || exit 0 ;\
+	echo "MRC:$@> Updating microcode." ;\
 	kldload -n cpuctl || exit 1 ;\
-	for cpu in $$(jot "$$(sysctl -n hw.ncpu)" 0); do \
+	for cpu in $$(jot ${NCPU} 0); do \
 	  ( cpucontrol -u -d /usr/local/share/cpucontrol /dev/cpuctl$${cpu} \
-	      || exit 1 \
+	    || exit 1 \
 	  ) | grep -v '^TEST' ;\
 	  cpucontrol -e /dev/cpuctl$${cpu} || exit 1 ;\
 	done
-.endif
 
 mixers=${:!find /dev -name 'mixer*'!:S/\/dev\///}
 
@@ -155,11 +154,13 @@ mixer: mount cleanvar
 excludes=${NETFS_TYPES:C/:.*//}
 
 mount: root zfs
-	echo "MRC:$@> Mount local FS."
+	echo "MRC:$@> Mount local FS." ;\
+	mount -uo rw -a ;\
+	mount ;\
 	mount -a -t no${excludes:ts,}
 
 mountlate: NETWORK mount cleanvar runshm devd
-	echo "MRC:$@> Mount late FS."
+	echo "MRC:$@> Mount late FS." ;\
 	mount -a
 
 msgs: mount
@@ -229,9 +230,8 @@ random: mount devfs
 	sysctl kern.seedenable=0 > /dev/null
 
 root: fsck bootfs
-	echo "MRC:$@> Mount root R/W."
-	mount -uo rw /
-	umount -a
+	echo "MRC:$@> Mount root R/W." ;\
+	mount -uo rw
 
 rpc_umntall: mountlate NETWORK rpcbind
 .if empty(RPC_UMNTALL_ENABLE:tl:Mno)
@@ -270,7 +270,6 @@ sysctl: kld root
 
 sysdb: mountlate
 	echo "MRC:$@> Building databases."; \
-	dev_mkdb; \
 	install -c -m 644 -g wheel /dev/null /var/run/utmpx
 
 wlans: kld
