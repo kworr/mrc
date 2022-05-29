@@ -13,13 +13,13 @@ STARTER?=svc
 .error No service handler defined.
 .endif
 
-#.MAKE.JOBS?=2
 .SILENT:
 
 install:
 	install rc /etc/rc
 
 SCRIPTS=${:!find /etc/mrc -name '*.service.mk'!:S/\/etc\/mrc\///}
+TARGETS:=${SCRIPTS:S/.service.mk//}
 
 .if defined(AUTOBOOT)
 .include "init.mk"
@@ -44,8 +44,6 @@ newsyslog:
 
 test:
 	echo Empty target.
-
-TARGETS:=${SCRIPTS:S/.service.mk//}
 
 .for file in ${SCRIPTS}
 #.info ${file}
