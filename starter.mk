@@ -4,8 +4,8 @@ STARTER?=svc
 
 _service_check: .USEBEFORE
 	# check whether service is enabled
-	if [ -z "$${DAEMON_$@_ENABLE}" ]; then \
-		exit 0; \
+	if [ -z "$${DAEMON_$@_ENABLE}" -a -z "${FORCE}" ]; then \
+		exit 0 ;\
 	fi
 
 _service_pre: .USEBEFORE

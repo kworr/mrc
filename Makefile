@@ -3,6 +3,11 @@
 .include "/etc/mrc.mk"
 .export
 
+.MAKE.JOBS?=1
+.if !empty(.MAKE.MODE:Mcompat)
+.error "ERROR: MRC doesn't support "compat" mode."
+.endif
+
 OTHER_TARGETS:=
 
 .include "starter.mk"
