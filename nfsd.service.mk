@@ -11,5 +11,3 @@ nfsd: mountd ${_SERVICE} rpcbind
 .if empty(NFS_RESERVED_PORT_ONLY:tl:Mno)
 	sysctl vfs.nfs.nfs_privport=1
 .endif
-
-nfsd_exit:

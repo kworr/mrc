@@ -25,14 +25,10 @@ DAEMON_example_MODULES?=
 DAEMON_example_USER?=root
 
 # extra commands to execute before starting service
-# _earlyservice - starts after root mount appear
-# _service - doesn't required for early boot
+# ${_SERVICE} - starts after root mount appear
+# ${_EARLYSERVICE} - not required on early boot
 # you also can select specific starter by inheriting class by full name:
-# _(daemon|plain|svc)_(early)?service
-example: _earlyservice
-	test -n "$${DAEMON_$@_ENABLE}" || echo service is always execute
+# ${_(EARLY)?SERVICE(_(SVC|DAEMON|PLAIN))?}
 
-# you can't be sure whether service is enabled on the first run, when future
-# targets are only assembled, as service can be enabled later in the chain
-# somake sure to check whether service is enabled in scripts you are running
-# not in make constructs
+example: ${_EARLYSERVICE}
+	: run commands that should go before the service start

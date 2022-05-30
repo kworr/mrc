@@ -1,6 +1,6 @@
-DAEMON_bsdstats_COMMAND?=/usr/local/etc/periodic/monthly/300.statistics
-DAEMON_bsdstats_ENABLE?=no
-DAEMON_bsdstats_FLAGS?=-nodelay
+DAEMON_bsdstat_COMMAND?=/usr/local/etc/periodic/monthly/300.statistics
+DAEMON_bsdstat_ENABLE?=no
+DAEMON_bsdstat_FLAGS?=-nodelay
 
-bsdstats: _service_plain
-bsdstats_exit:
+bsdstat: ${_SERVICE_PLAIN}
+bsdstat_exit:

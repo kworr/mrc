@@ -5,4 +5,4 @@ _service_daemon_status: .USE
 	echo "Not supported yet."
 
 _service_daemon_exit: .USEBEFORE
-	kill -TERM /var/run/daemon.$@.pid
+	kill -TERM /var/run/daemon.${@:S/_exit//}.pid
