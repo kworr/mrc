@@ -5,6 +5,5 @@ DAEMON_node_exporter_TEXTFILE_DIR?=/var/tmp/node_exporter
 DAEMON_node_exporter_USER?=nobody
 DAEMON_node_exporter_GROUP?=nobody
 
-node_exporter: _service
-	test -z "$${DAEMON_$@_ENABLE}" || \
+node_exporter: ${_SERVICE}
 	install -d -o ${DAEMON_node_exporter_USER} -g ${DAEMON_node_exporter_GROUP} -m1755 ${DAEMON_node_exporter_TEXTFILE_DIR}

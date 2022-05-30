@@ -4,8 +4,8 @@ DAEMON_dbus_FLAGS?=--system
 DAEMON_dbus_BACKGROUND?=--fork
 DAEMON_dbus_FOREGROUND?=--nofork
 
-dbus: _service
-	test -z "$${DAEMON_$@_ENABLE}" || { \
-	  /usr/local/bin/dbus-uuidgen --ensure; \
-	  mkdir -p /var/run/dbus; \
-	}
+dbus: ${_SERVICE}
+	/usr/local/bin/dbus-uuidgen --ensure
+	mkdir -p /var/run/dbus
+
+dbus_exit: ${_SERVICE_EXIT} slim_exit

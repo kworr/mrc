@@ -3,9 +3,8 @@ DAEMON_smartd_ENABLE?=no
 DAEMON_smartd_FLAGS?=-c /usr/local/etc/smartd.conf
 DAEMON_smartd_FOREGROUND?=-n
 
-smartd: _service
-	test -z "$${DAEMON_$@_ENABLE}" || \
-	test -f /usr/local/etc/smartd.conf || { \
-	  echo "MRC:$@> smartd requires config file to start." ; \
-	  exit 1; \
-	}
+smartd: ${_SERVICE}
+	if [ ! -f /usr/local/etc/smartd.conf ]; then \
+		echo "MRC:$@> smartd requires config file to start."; \
+		exit 1; \
+	fi

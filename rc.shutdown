@@ -1,0 +1,19 @@
+#!/sbin/sh -Tue -
+
+stty status '^T'
+
+trap : 2
+
+HOME=/
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+export PATH HOME
+
+MAKEINIT="make -D AUTOBOOT -C /etc/mrc"
+NCPU=$((`/sbin/sysctl -n hw.ncpu` + 1 ))
+#MAKEDEBUG="-d -nelLx"
+
+mount -t tmpfs tmpfs /etc/mrc/tmp && ${MAKEINIT} -j ${NCPU} ${MAKEDEBUG} -X TMPDIR=/etc/mrc/tmp EXIT && umount /etc/mrc/tmp || ${MAKEINIT} EXIT
+
+echo '.'
+exit 0

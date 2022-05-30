@@ -6,8 +6,11 @@ DAEMON_mountd_FLAGS?=-r
 DAEMON_rpcbind_ENABLE=yes
 .endif
 
-mountd: rpcbind NETWORK SERVERS _service # mountlate -> SERVERS
-	test -z "$${DAEMON_$@_ENABLE}" || { \
-	  rm -f /var/db/mountdtab; \
-	  ( umask 022 ; touch /var/db/mountdtab ); \
-	}
+mountd: rpcbind NETWORK SERVERS ${_SERVICE} # mountlate -> SERVERS
+	rm -f /var/db/mountdtab ;\
+	( umask 022; touch /var/db/mountdtab; ) ;\
+	:
+
+mountd_exit: ${_SERVICE_EXIT} nfsd_exit
+
+NETWORK_EXIT: mountd_exit

@@ -6,4 +6,4 @@ DAEMON_watchdogd_FOREGROUND?=-d
 DAEMON_watchdogd_ENABLE=no
 .endif
 
-watchdogd: _earlyservice
+watchdogd: ${_EARLYSERVICE}

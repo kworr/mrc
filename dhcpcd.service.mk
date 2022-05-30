@@ -4,4 +4,7 @@ DAEMON_dhcpcd_FLAGS?="-h${HOSTNAME}"
 DAEMON_dhcpcd_BACKGROUND?=-b
 DAEMON_dhcpcd_FOREGROUND?=-B
 
-dhcpcd: _service NETWORK SERVICE # mount -> SERVICE, cleanvar -> SERVICE
+dhcpcd: ${_SERVICE} NETWORK SERVICE # mount -> SERVICE, cleanvar -> SERVICE
+
+NETWORK_EXIT: dhcpcd_exit
+SERVICE_EXIT: dhcpcd_exit

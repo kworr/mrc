@@ -1,9 +1,11 @@
 # Meta targets
 
-TARGETS+=adjkerntz bootfs cleanvar cleartmp cloned devfs dmesg dumpon fsck \
+TARGETS:=adjkerntz bootfs cleanvar cleartmp cloned devfs dmesg dumpon fsck \
 	hostname kld ldconfig microcode mixer mount mountlate msgs netif \
-	newsyslog nextboot nfsclient pf pwcheck random root rpc_umntall runshm \
-	savecore swap sysctl sysdb wlans zfs
+	newsyslog nextboot nfsclient pf pwcheck random root runshm savecore swap \
+	sysctl sysdb wlans zfs
+
+OTHER_TARGETS+=mixer_exit nfsclient_exit random_exit
 
 DAEMON: pwcheck sysctl sysdb NETWORK SERVERS ldconfig nfsclient cleartmp pflogd
 
@@ -35,27 +37,27 @@ cleanvar: mount
 cleartmp: mountlate
 	echo "MRC:$@> Clearing tmp."; \
 	find -x /tmp -mindepth 1 ! -name lost+found \
-	    ! -name snapshots ! -path "./snapshots/*" \
-	    ! -name quota.user ! -name quota.group \
-	    -delete -type d -prune ;\
-	  rm -f /tmp/.X*-lock ;\
-	  rm -fr /tmp/.X11-unix ;\
-	  mkdir -m 1777 /tmp/.X11-unix
+			! -name snapshots ! -path "./snapshots/*" \
+			! -name quota.user ! -name quota.group \
+			-delete -type d -prune ;\
+		rm -f /tmp/.X*-lock ;\
+		rm -fr /tmp/.X11-unix ;\
+		mkdir -m 1777 /tmp/.X11-unix
 
 cloned: kld
 .if !empty(CLONED_INTERFACES)
 	echo "MRC:$@> Cloning interfaces: ${CLONED_INTERFACES}"
-.for iface in ${CLONED_INTERFACES}
+.	for iface in ${CLONED_INTERFACES}
 	ifconfig ${iface} create
-.endfor
+.	endfor
 .endif
 
 devfs:
 	echo "MRC:$@> Applying rules: ${DEVFS_CONFIG_FILES}"
 .for file in ${DEVFS_CONFIG_FILES}
-.if exists(${file})
+.	if exists(${file})
 	devfsctl -a -f ${file}
-.endif
+.	endif
 .endfor
 
 dmesg: mountlate
@@ -66,10 +68,10 @@ dmesg: mountlate
 
 dumpon: random
 .if !empty(DUMPDEV)
-	test -e ${DUMPDEV} && { \
-	  echo "MRC:$@> Setting dumpon device to ${DUMPDEV}"; \
-	  dumpon -v ${DUMPDEV}; \
-	} || true
+	if [ -e ${DUMPDEV} ]; then \
+		echo "MRC:$@> Setting dumpon device to ${DUMPDEV}"; \
+		dumpon -v ${DUMPDEV}; \
+	fi
 .endif
 
 fsck:
@@ -78,31 +80,31 @@ fsck:
 	case $$? in \
 	0) ;; \
 	2) exit 1 \
-	   ;; \
+		;; \
 	4) echo "Rebooting..." ;\
-	   reboot ;\
-	   echo "Reboot failed; help!" ;\
-	   exit 1 \
-	   ;; \
+		reboot ;\
+		echo "Reboot failed; help!" ;\
+		exit 1 \
+		;; \
 	8) if [ -n "$${FSCK_Y_ENABLE}" ]; then \
-	     echo "File system preen failed, trying fsck -y." ;\
-	     fsck -y || {\
-	       echo "Automatic file system check failed; help!" ;\
-	       exit 1 ;\
-	     }\
-	   else \
-	     echo "Automatic file system check failed; help!" ;\
-	     exit 1 ;\
-	   fi ;\
-	   ;; \
+			echo "File system preen failed, trying fsck -y." ;\
+			fsck -y || {\
+				echo "Automatic file system check failed; help!" ;\
+				exit 1 ;\
+			} ;\
+		else \
+			echo "Automatic file system check failed; help!" ;\
+			exit 1 ;\
+		fi \
+		;; \
 	12) echo "Boot interrupted." ;\
-	   exit 1 \
-	   ;; \
+		exit 1 \
+		;; \
 	130) exit 1 \
-	   ;; \
+		;; \
 	*) echo "Unknown error, help!" ;\
-	   exit 1 \
-	   ;; \
+		exit 1 \
+		;; \
 	esac
 
 hostname:
@@ -111,10 +113,11 @@ hostname:
 
 kld: bootfs
 .if defined(KLD_LIST)
-	echo "MRC:$@> Loading kernel modules: ${KLD_LIST}"
+	echo "MRC:$@> Loading kernel modules: ${KLD_LIST}" ;\
 	kldload -n ${KLD_LIST}
 .endif
 
+# ldconfig
 .for path in ${LDCONFIG_PATHS} /etc/ld-elf.so.conf
 .if exists(${path})
 ldc+=${path}
@@ -136,10 +139,10 @@ microcode: mountlate
 	echo "MRC:$@> Updating microcode." ;\
 	kldload -n cpuctl || exit 1 ;\
 	for cpu in $$(jot ${NCPU} 0); do \
-	  ( cpucontrol -u -d /usr/local/share/cpucontrol /dev/cpuctl$${cpu} \
-	    || exit 1 \
-	  ) | grep -v '^TEST' ;\
-	  cpucontrol -e /dev/cpuctl$${cpu} || exit 1 ;\
+		{ cpucontrol -u -d /usr/local/share/cpucontrol /dev/cpuctl$${cpu} \
+			|| exit 1 ;\
+		} | grep -v '^TEST' ;\
+		cpucontrol -e /dev/cpuctl$${cpu} || exit 1 ;\
 	done
 
 mixers=${:!find /dev -name 'mixer*'!:S/\/dev\///}
@@ -147,9 +150,20 @@ mixers=${:!find /dev -name 'mixer*'!:S/\/dev\///}
 mixer: mount cleanvar
 	echo "MRC:$@> Restoring levels."
 .for mixer in ${mixers}
-	test -f /var/db/${mixer}-state || true && mixer -f /dev/${mixer} \
-	  `cat /var/db/${mixer}-state`
+	if [ -r /var/db/${mixer}-state ]; then \
+		mixer -f /dev/${mixer} `cat /var/db/${mixer}-state` ;\
+	fi
 .endfor
+
+mixer_exit:
+	echo "MRC:$@> Saving mixer levels."
+.for mixer in ${mixers}
+	if [ -r /dev/${mixer} ]; then \
+		mixer -f /dev/${mixer} -s > /var/db/${mixer}-state ;\
+	fi
+.endfor
+
+DAEMON_EXIT: mixer_exit
 
 excludes=${NETFS_TYPES:C/:.*//}
 
@@ -165,13 +179,14 @@ mountlate: NETWORK mount cleanvar runshm devd
 
 msgs: mount
 	echo "MRC:$@> Making bounds." ;\
-	  test ! -d /var/msgs -o -f /var/msgs/bound -o -L /var/msgs/bounds || \
-	  echo 0 > /var/msgs/bounds
+		test ! -d /var/msgs -o -f /var/msgs/bound -o -L /var/msgs/bounds || \
+		echo 0 > /var/msgs/bounds
 
 newsyslog: mountlate sysdb
-	test -z "$${NEWSYSLOG_ENABLE}" || \
-	  echo "MRC:$@> Trimming log files." ;\
-	  /usr/sbin/newsyslog ${NEWSYSLOG_FLAGS}
+	if [ -n "$${NEWSYSLOG_ENABLE}" ]; then \
+		echo "MRC:$@> Trimming log files." ;\
+		/usr/sbin/newsyslog ${NEWSYSLOG_FLAGS} ;\
+	fi
 
 nextboot: mount
 .if exists(/boot/nextkernel)
@@ -183,8 +198,19 @@ nextboot: mount
 DAEMON_rpcbind_ENABLE=yes
 .endif
 
-nfsclient: NETWORK rpcbind rpc_umntall
-	test -z "$${NFSCLIENT_ENABLE}" || kldload -n nfs
+nfsclient: NETWORK rpcbind
+	if [ -n "$${NFSCLIENT_ENABLE}" ]; then \
+		kldload -n nfs ;\
+	fi
+
+nfsclient_exit: DAEMON_EXIT
+.if empty(RPC_UMNTALL_ENABLE:tl:Mno)
+	echo "MRC:$@> Sending RPC unmount notifications."; \
+	test -f /var/db/mounttab || true && \
+		rpc.umntall -k
+.endif
+
+NETWORK_EXIT: nfsclient_exit
 
 netif: adjkerntz wlans cloned kld
 	echo "MRC:$@> Starting interfaces: ${IFCONFIG_IFACES}"
@@ -199,46 +225,50 @@ pf: pflogd
 .if empty(PF_ENABLE:tl:Mno)
 	echo "MRC:$@> Enabling and loading rules." ;\
 	kldload -n pf || exit 1 ;\
-	test -r ${PF_RULES} || {\
-	  echo "MRC:$@> Can't find file with rules at ${PF_RULES}." ;\
-	  exit 1 ;\
-	} ;\
-	pfctl -Fa || exit 1 ;\
-	pfctl -f ${PF_RULES} ${PF_FLAGS} || exit 1 ;\
-	pfctl -Si | grep -q Enabled && pfctl -e
+	if [ -r ${PF_RULES} ]; then \
+		pfctl -Fa || exit 1 ;\
+		pfctl -f ${PF_RULES} ${PF_FLAGS} || exit 1 ;\
+		pfctl -Si | grep -q Enabled && pfctl -e; \
+	else \
+		echo "MRC:$@> Can't find file with rules at ${PF_RULES}." ;\
+		exit 1 ;\
+	fi
 .endif
 
 pwcheck: mountlate syslogd
 	echo "MRC:$@> Checking password lock file."
 .if exists(/etc/ptmp)
-	logger -s -p auth.err "password file may be incorrect -- /etc/ptmp \
-	  exists"
+	logger -s -p auth.err \
+		"password file may be incorrect -- /etc/ptmp exists"
 .endif
 
 random: mount devfs
 	echo "MRC:$@> Seeding." ;\
 	sysctl kern.seedenable=1 > /dev/null ;\
-	( ps -fauxww; sysctl -a; date; df -ib; dmesg; ps -fauxww; ) 2>&1 | \
-	  dd status=none of=/dev/random bs=8k ;\
+	{ ps -fauxww; sysctl -a; date; df -ib; dmesg; ps -fauxww; } 2>&1 | \
+		dd status=none of=/dev/random bs=8k ;\
 	dd if=/bin/ps status=none of=/dev/random bs=8k ;\
-	test -d $${ENTROPY_DIR} && {\
-	  find $${ENTROPY_DIR} -type f |\
-	  xargs -n1 -Ifoo dd status=none if=foo of=/dev/random bs=8k ;\
-	} || {\
-	  dd status=none if=${ENTROPY_FILE} of=/dev/random bs=8k ;\
-	} ;\
+	if [ -d $${ENTROPY_DIR} ]; then \
+		find $${ENTROPY_DIR} -type f |\
+			xargs -n1 -Ifoo dd status=none if=foo of=/dev/random bs=8k ;\
+	else \
+		if [ -r ${ENTROPY_FILE} ]; then \
+			dd status=none if=${ENTROPY_FILE} of=/dev/random bs=8k ;\
+		fi ;\
+	fi ;\
 	sysctl kern.seedenable=0 > /dev/null
+
+random_exit:
+	rm -f ${ENTROPY_FILE}; \
+	umask 077 && \
+	dd if=/dev/random of=${ENTROPY_FILE} bs=8k count=1 || \
+		echo "MRC:$@> entropy file write failed."
+
+DAEMON_EXIT: random_exit
 
 root: fsck bootfs
 	echo "MRC:$@> Mount root R/W." ;\
 	mount -uo rw
-
-rpc_umntall: mountlate NETWORK rpcbind
-.if empty(RPC_UMNTALL_ENABLE:tl:Mno)
-	echo "MRC:$@> Sending RPC unmount notifications."; \
-	test -f /var/db/mounttab || true && \
-	  rpc.umntall -k &
-.endif
 
 runshm: cleanvar
 	echo "MRC:$@> Mount and populate /var/run/shm."; \
@@ -265,7 +295,7 @@ sysctl: kld root
 .if exists(/etc/sysctl.conf)
 	echo "MRC:$@> Setting sysctl defaults."; \
 	awk '$$0~/^[ ]*(#.*)?$$/{next}{print}' < /etc/sysctl.conf | \
-	  xargs -n1 sysctl
+		xargs -n1 sysctl
 .endif
 
 sysdb: mountlate
@@ -275,12 +305,12 @@ sysdb: mountlate
 wlans: kld
 	echo "MRC:$@> Configuring wlans."; \
 	for dev in $$(sysctl -n net.wlan.devices); do \
-	  eval all_wlans=\$${WLANS_$${dev}}; \
-	  for wlan in $${all_wlans}; do \
-	    eval wlan_args=\$${WLANS_$${wlan}_ARGS}; \
-	    ifconfig $${wlan} create wlandev $${dev} $${wlan_args}; \
-	    ifconfig $${wlan} up; \
-	  done; \
+		eval all_wlans=\$${WLANS_$${dev}}; \
+		for wlan in $${all_wlans}; do \
+			eval wlan_args=\$${WLANS_$${wlan}_ARGS}; \
+			ifconfig $${wlan} create wlandev $${dev} $${wlan_args}; \
+			ifconfig $${wlan} up; \
+		done; \
 	done
 
 zfs:

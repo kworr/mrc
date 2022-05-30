@@ -1,25 +1,19 @@
 .include "defaults.mk"
+.include "order.mk"
 .include "/etc/mrc.mk"
 .export
 
-OTHER_TARGETS:=_service _earlyservice
-STARTER?=svc
+OTHER_TARGETS:=
 
-.for starter in ${:!find /etc/mrc -name '*.starter.mk'!:S/\/etc\/mrc\///}
-.include "${starter}"
-.endfor
-
-.if !target(_service) || !target(_earlyservice)
-.error No service handler defined.
-.endif
+.include "starter.mk"
 
 .SILENT:
 
 install:
 	install rc /etc/rc
+	install rc.shutdown /etc/rc.shutdown
 
-SCRIPTS=${:!find /etc/mrc -name '*.service.mk'!:S/\/etc\/mrc\///}
-TARGETS:=${SCRIPTS:S/.service.mk//}
+SCRIPTS:=${:!find /etc/mrc -name '*.service.mk'!:S/^\/etc\/mrc\///:S/.service.mk$//}
 
 .if defined(AUTOBOOT)
 .include "init.mk"
@@ -29,49 +23,45 @@ TARGETS:=${SCRIPTS:S/.service.mk//}
 	: target ${.ERROR_TARGET} failed to execute:
 	: ${.ERROR_CMD}
 	kill 1
-.else
-DAEMON: NETWORK SERVERS
-LOGIN: DAEMON
-NETWORK:
-SERVERS:
-SERVICE:
-
-mount:
-root:
-netif:
-newsyslog:
 .endif
 
 test:
 	echo Empty target.
 
-.for file in ${SCRIPTS}
-#.info ${file}
-.include "${file}"
-.if !target(${file:S/.service.mk//})
-${file:S/.service.mk//}: _service
-.endif
-.if !target(${file:S/.service.mk/_status/})
-${file:S/.service.mk/_status/}: _status
-.endif
-.if !target(${file:S/.service.mk/_restart/})
-${file:S/.service.mk/_restart/}: _restart
-.endif
+# Create service targets
+.for service in ${SCRIPTS}
+.	include "${service}.service.mk"
+
+# Service creation targets
+.	if !target(${service})
+${service}: ${_SERVICE}
+.	endif
+
+# Service creation targets
+.	if !target(${service}_status)
+${service}_status: ${_SERVICE_STATUS}
+.	endif
+
+# Service exit targets
+.	if !target(${service}_exit)
+${service}_exit: ${_SERVICE_EXIT}
+.	endif
+
+DAEMON_EXIT: ${service}_exit
 .endfor
 
-.MAIN: ${TARGETS}
+.MAIN: ${SCRIPTS} ${TARGETS}
 
-.PHONY: ${TARGETS} ${OTHER_TARGETS}
+.PHONY: ${SCRIPTS} ${OTHER_TARGETS} ${TARGETS}
+.undef OTHER_TARGETS SCRIPTS TARGETS
 
-.undef TARGETS OTHER_TARGETS SCRIPTS
-
-ENABLED=${:!env!:C/=.*//:M*_ENABLE}
+ENABLED:=${:!env!:C/=.*//:M*_ENABLE}
 
 .for var in ${ENABLED}
-.if !empty(${var}:tl:Mno)
+.	if !empty(${var}:tl:Mno)
 #.info ${var}
-.undef ${var}
-.endif
+.		undef ${var}
+.	endif
 .endfor
 
 .undef ENABLED

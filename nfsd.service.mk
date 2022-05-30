@@ -7,7 +7,9 @@ DAEMON_rpcbind_ENABLE=yes
 DAEMON_mountd_ENABLE=yes
 .endif
 
-nfsd: mountd _service rpcbind
+nfsd: mountd ${_SERVICE} rpcbind
 .if empty(NFS_RESERVED_PORT_ONLY:tl:Mno)
 	sysctl vfs.nfs.nfs_privport=1
 .endif
+
+nfsd_exit:

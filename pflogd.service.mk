@@ -7,7 +7,7 @@ pflogd: root mount netif
 	echo "MRC:$@> Configuring device." ;\
 	kldload -n pf || exit 1 ;\
 	ifconfig pflog0 up || { \
-	  echo "MRC:$@> Failed to set up pflog0 device." ;\
-	  exit 1 ;\
+		echo "MRC:$@> Failed to set up pflog0 device." ;\
+		exit 1 ;\
 	}
 .endif
