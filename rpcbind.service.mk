@@ -2,8 +2,8 @@ DAEMON_rpcbind_COMMAND?=/usr/sbin/rpcbind
 DAEMON_rpcbind_ENABLE?=no
 DAEMON_rpcbind_FLAGS?=-d
 
-rpcbind: ${_EARLYSERVICE} NETWORK syslogd
+DAEMON_syslogd_DEPS+=rpcbind
 
-rpcbind_exit: ${_SERVICE_EXIT} mountd_exit nfsd_exit
+rpcbind: ${_EARLYSERVICE} NETWORK syslogd
 
 NETWORK_EXIT: rpcbind_exit

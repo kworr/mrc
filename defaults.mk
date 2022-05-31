@@ -60,5 +60,9 @@ RPC_UMNTALL_ENABLE?=no
 CRASHINFO_ENABLE?=no
 DUMPDIR?=/var/crash
 
+# tmpfs
+TMPFS_TMP_ENABLE?=no
+TMPFS_VAR_RUN_ENABLE?=no
+
 # zfs
 ZFS_ENABLE?=no

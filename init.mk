@@ -3,7 +3,7 @@
 TARGETS:=adjkerntz bootfs cleanvar cleartmp cloned devfs dmesg dumpon fsck \
 	hostname kld ldconfig microcode mixer mount mountlate msgs netif \
 	newsyslog nextboot nfsclient pf pwcheck random root runshm savecore swap \
-	sysctl sysdb wlans zfs
+	sysctl sysdb wlans zfs mounttmpfs utmpx
 
 OTHER_TARGETS+=mixer_exit nfsclient_exit random_exit
 
@@ -28,21 +28,20 @@ bootfs: fsck
 	mount -vadr | grep -q ' /boot$$' && mount -r /boot || true
 
 cleanvar: mount
-	echo "MRC:$@> Cleaning 'var's."
+	echo "MRC:$@> Cleaning '/var's."
 .for dir in ${CLEANVAR_DIRS}
-	test -d ${dir} && find ${dir} -mindepth 1 -delete || true
+	if [ -d ${dir} ]; then \
+		/rescue/find ${dir} -mindepth 1 -delete ;\
+	fi
 .endfor
-	install -m644 /dev/null /var/run/utmpx
 
 cleartmp: mountlate
-	echo "MRC:$@> Clearing tmp."; \
-	find -x /tmp -mindepth 1 ! -name lost+found \
-			! -name snapshots ! -path "./snapshots/*" \
-			! -name quota.user ! -name quota.group \
-			-delete -type d -prune ;\
-		rm -f /tmp/.X*-lock ;\
-		rm -fr /tmp/.X11-unix ;\
-		mkdir -m 1777 /tmp/.X11-unix
+	echo "MRC:$@> Clearing tmp."
+	find -x /tmp -mindepth 1 ! -name lost+found ! -name snapshots \
+		! -path "./snapshots/*" ! -name quota.user ! -name quota.group \
+		-delete -type d -prune
+	rm -fr /tmp/.X11-unix /tmp/.X*-lock
+	mkdir -m 1777 /tmp/.X11-unix
 
 cloned: kld
 .if !empty(CLONED_INTERFACES)
@@ -63,14 +62,14 @@ devfs:
 dmesg: mountlate
 .if !empty(DMESG_FILE)
 	echo "MRC:$@> Writing dmesg."
-	umask 022 ; dmesg -a >> ${DMESG_FILE}
+	( umask 022 ; dmesg -a > ${DMESG_FILE} ;)
 .endif
 
 dumpon: random
 .if !empty(DUMPDEV)
 	if [ -e ${DUMPDEV} ]; then \
-		echo "MRC:$@> Setting dumpon device to ${DUMPDEV}"; \
-		dumpon -v ${DUMPDEV}; \
+		echo "MRC:$@> Setting dumpon device to ${DUMPDEV}" ;\
+		dumpon -v ${DUMPDEV} ;\
 	fi
 .endif
 
@@ -88,7 +87,7 @@ fsck:
 		;; \
 	8) if [ -n "$${FSCK_Y_ENABLE}" ]; then \
 			echo "File system preen failed, trying fsck -y." ;\
-			fsck -y || {\
+			fsck -y || { \
 				echo "Automatic file system check failed; help!" ;\
 				exit 1 ;\
 			} ;\
@@ -173,7 +172,7 @@ mount: root zfs
 	mount ;\
 	mount -a -t no${excludes:ts,}
 
-mountlate: NETWORK mount cleanvar runshm devd
+mountlate: NETWORK mount cleanvar runshm devd mounttmpfs
 	echo "MRC:$@> Mount late FS." ;\
 	mount -a
 
@@ -212,7 +211,7 @@ nfsclient_exit: DAEMON_EXIT
 
 NETWORK_EXIT: nfsclient_exit
 
-netif: adjkerntz wlans cloned kld
+netif: adjkerntz wlans cloned kld mounttmpfs utmpx
 	echo "MRC:$@> Starting interfaces: ${IFCONFIG_IFACES}"
 .for iface in ${IFCONFIG_IFACES}
 .for item in ${IFCONFIG_${iface}:tW:ts;}
@@ -223,12 +222,12 @@ netif: adjkerntz wlans cloned kld
 
 pf: pflogd
 .if empty(PF_ENABLE:tl:Mno)
-	echo "MRC:$@> Enabling and loading rules." ;\
-	kldload -n pf || exit 1 ;\
+	echo "MRC:$@> Enabling and loading rules."
+	kldload -n pf || exit 1
 	if [ -r ${PF_RULES} ]; then \
 		pfctl -Fa || exit 1 ;\
 		pfctl -f ${PF_RULES} ${PF_FLAGS} || exit 1 ;\
-		pfctl -Si | grep -q Enabled && pfctl -e; \
+		pfctl -Si | grep -q Enabled && pfctl -e ;\
 	else \
 		echo "MRC:$@> Can't find file with rules at ${PF_RULES}." ;\
 		exit 1 ;\
@@ -243,42 +242,38 @@ pwcheck: mountlate syslogd
 .endif
 
 random: mount devfs
-	echo "MRC:$@> Seeding." ;\
-	sysctl kern.seedenable=1 > /dev/null ;\
-	{ ps -fauxww; sysctl -a; date; df -ib; dmesg; ps -fauxww; } 2>&1 | \
-		dd status=none of=/dev/random bs=8k ;\
-	dd if=/bin/ps status=none of=/dev/random bs=8k ;\
+	echo "MRC:$@> Seeding."
+	sysctl kern.seedenable=1 > /dev/null
+	( ps -fauxww; sysctl -a; date; df -ib; dmesg; ps -fauxww ;) 2>&1 |\
+		dd status=none of=/dev/random bs=8k 2>/dev/null
+	dd if=/bin/ps status=none of=/dev/random bs=8k 2>/dev/null
 	if [ -d $${ENTROPY_DIR} ]; then \
 		find $${ENTROPY_DIR} -type f |\
-			xargs -n1 -Ifoo dd status=none if=foo of=/dev/random bs=8k ;\
+			xargs -n1 -Ifoo dd status=none if=foo of=/dev/random bs=8k 2>/dev/null ;\
 	else \
 		if [ -r ${ENTROPY_FILE} ]; then \
-			dd status=none if=${ENTROPY_FILE} of=/dev/random bs=8k ;\
-		fi ;\
-	fi ;\
+			dd status=none if=${ENTROPY_FILE} of=/dev/random bs=8k 2>/dev/null ;\
+		fi \
+	fi
 	sysctl kern.seedenable=0 > /dev/null
 
 random_exit:
-	rm -f ${ENTROPY_FILE}; \
-	umask 077 && \
-	dd if=/dev/random of=${ENTROPY_FILE} bs=8k count=1 || \
-		echo "MRC:$@> entropy file write failed."
+	rm -f ${ENTROPY_FILE}
+	( \
+		umask 077 ;\
+		dd if=/dev/random of=${ENTROPY_FILE} bs=8k count=1 2>/dev/null || \
+			echo "MRC:$@> entropy file write failed." ;\
+	)
 
 DAEMON_EXIT: random_exit
 
 root: fsck bootfs
-	echo "MRC:$@> Mount root R/W." ;\
+	echo "MRC:$@> Mount root R/W."
 	mount -uo rw
-
-runshm: cleanvar
-	echo "MRC:$@> Mount and populate /var/run/shm."; \
-	mkdir -p /var/run/shm; \
-	mount_tmpfs -m 01777 dummy /var/run/shm; \
-	mkdir -p -m 01777 /var/run/shm/tmp; \
 
 savecore: dumpon
 .if empty(DUMPDEV:tl:Mno) && exists(${DUMPDEV}) && exists(${DUMPDIR})
-	echo "MRC:$@> Saving coredump."; \
+	echo "MRC:$@> Saving coredump."
 	savecore ${DUMPDIR} ${DUMPDEV}
 .if empty(CRASHINFO_ENABLE:tl:Mno)
 	crashinfo -d ${DUMPDIR}
@@ -287,35 +282,59 @@ savecore: dumpon
 
 swap: savecore
 .if ${:!sysctl -n vm.swap_enabled!}} != 0
-	echo "MRC:$@> Enabling swap."; \
+	echo "MRC:$@> Enabling swap."
 	swapon -a
 .endif
 
 sysctl: kld root
 .if exists(/etc/sysctl.conf)
-	echo "MRC:$@> Setting sysctl defaults."; \
+	echo "MRC:$@> Setting sysctl defaults."
 	awk '$$0~/^[ ]*(#.*)?$$/{next}{print}' < /etc/sysctl.conf | \
 		xargs -n1 sysctl
 .endif
 
 sysdb: mountlate
-	echo "MRC:$@> Building databases."; \
+	echo "MRC:$@> Building databases."
 	install -c -m 644 -g wheel /dev/null /var/run/utmpx
 
 wlans: kld
-	echo "MRC:$@> Configuring wlans."; \
+	echo "MRC:$@> Configuring wlans."
 	for dev in $$(sysctl -n net.wlan.devices); do \
-		eval all_wlans=\$${WLANS_$${dev}}; \
+		eval all_wlans=\$${WLANS_$${dev}} ;\
 		for wlan in $${all_wlans}; do \
-			eval wlan_args=\$${WLANS_$${wlan}_ARGS}; \
-			ifconfig $${wlan} create wlandev $${dev} $${wlan_args}; \
-			ifconfig $${wlan} up; \
-		done; \
+			eval wlan_args=\$${WLANS_$${wlan}_ARGS} ;\
+			ifconfig $${wlan} create wlandev $${dev} $${wlan_args} ;\
+			ifconfig $${wlan} up ;\
+		done \
 	done
 
 zfs:
 .if empty(ZFS_ENABLE:tl:Mno)
-	zfs mount -va || exit $$? ;\
-	zfs share -a || exit $$? ;\
-	test -r /etc/zfs/exports || touch /etc/zfs/exports
+	zfs mount -va || exit $$?
+	zfs share -a || exit $$?
+	touch /etc/zfs/exports
 .endif
+
+runshm: cleanvar
+	echo "MRC:$@> Preparing /var/run."
+.	if exists(TMPFS_VAR_RUN_ENABLE)
+	/rescue/find /var/run -mindepth 1 -delete
+	mount_tmpfs dummy /var/run
+.	else
+	mkdir -p /var/run/shm
+	mount_tmpfs -m 01777 dummy /var/run/shm
+.	endif
+	mtree -deiqU -f /etc/mtree/BSD.var.dist -p /var
+
+mounttmpfs: cleanvar
+	echo "MRC:$@> Mount tmpfs and populating /var/run."
+.if exists(TMPFS_TMP_ENABLE)
+	mount | awk 'BEGIN{x=1}$$3~/\/tmp/{x=0}END{exit(x)}' || {
+		/rescue/find /tmp -mindepth 1 -delete
+		mount_tmpfs -m 01777 dummy /tmp
+	}
+.endif
+
+utmpx: runshm
+	echo "MRC:$@> Install utmpx."
+	install -m 644 -g wheel /dev/null /var/run/utmpx

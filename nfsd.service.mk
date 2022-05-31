@@ -3,6 +3,9 @@ DAEMON_nfsd_ENABLE?=no
 DAEMON_nfsd_FLAGS?=-u -t -n 4
 
 .if empty(DAEMON_nfsd_ENABLE:tl:Mno)
+DAEMON_mountd_DEPS+=nfsd
+DAEMON_rpcbind_DEPS+=nfsd
+
 DAEMON_rpcbind_ENABLE=yes
 DAEMON_mountd_ENABLE=yes
 .endif

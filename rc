@@ -9,7 +9,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 export PATH HOME
 
-MAKEINIT="make -D AUTOBOOT -C /etc/mrc"
+MAKEINIT="make -D AUTOBOOT -C /etc/mrc -k"
 NCPU=$((`/sbin/sysctl -n hw.ncpu` + 1 ))
 #MAKEDEBUG="-d -nelLx"
 

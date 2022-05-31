@@ -7,5 +7,3 @@ DAEMON_dbus_FOREGROUND?=--nofork --nopidfile
 dbus: ${_SERVICE}
 	/usr/local/bin/dbus-uuidgen --ensure
 	mkdir -p /var/run/dbus
-
-dbus_exit: ${_SERVICE_EXIT} slim_exit

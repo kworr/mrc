@@ -49,7 +49,7 @@ ${service}_status: ${_SERVICE_STATUS}
 
 # Service exit targets
 .	if !target(${service}_exit)
-${service}_exit: ${_SERVICE_EXIT}
+${service}_exit: ${_SERVICE_EXIT} ${DAEMON_${service}_DEPS:S/$/_exit/}
 .	endif
 
 DAEMON_EXIT: ${service}_exit

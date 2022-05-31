@@ -3,5 +3,3 @@ DAEMON_udevd_ENABLE?=yes
 DAEMON_udevd_FOREGROUND?=-d
 
 udevd: ${_EARLYSERVICE}
-
-udevd_exit: ${_SERVICE_EXIT} hotplugd_exit
