@@ -30,6 +30,10 @@ KLD_LIST?=
 LDCONFIG_PATHS?=/lib /usr/lib /usr/local/lib /usr/pkg/lib
 LDCONFIG_LOCAL_DIRS?=/usr/local/libdata/ldconfig
 
+# moused
+MOUSED_PORT?=/dev/ums0
+MOUSED_TYPE?=auto
+
 # mount
 NETFS_TYPES?=nfs:NFS smbfs:SMB
 
