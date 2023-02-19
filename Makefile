@@ -39,10 +39,10 @@ test:
 
 # Service creation targets
 .	if !target(${service})
-${service}: ${_SERVICE}
+${service}: ${SERVICE_EXIT} ${_SERVICE}
 .	endif
 
-# Service creation targets
+# Service status targets
 .	if !target(${service}_status)
 ${service}_status: ${_SERVICE_STATUS}
 .	endif
