@@ -3,7 +3,7 @@
 .include "/etc/mrc.mk"
 .export
 
-.MAKE.JOBS?=1
+.MAKE.JOBS?=	${NCPU}
 .if !empty(.MAKE.MODE:Mcompat)
 .error "ERROR: MRC doesn't support "compat" mode."
 .endif
@@ -37,22 +37,33 @@ test:
 .for service in ${SCRIPTS}
 .	include "${service}.service.mk"
 
+# Set DAEMON defaults
+DAEMON_${service}_CWD?=	/
+DAEMON_${service}_ENABLE?=	no
+DAEMON_${service}_USER?=	root
+DAEMON_${service}_GROUP?=	wheel
+
+.	if !defined(DAEMON_${service}_COMMAND)
+.		warning MRC> Service [${service}] defunct: no COMMAND specified
+.	else
+
 # Service creation targets
-.	if !target(${service})
+.		if !target(${service})
 ${service}: ${SERVICE_EXIT} ${_SERVICE}
-.	endif
+.		endif
 
 # Service status targets
-.	if !target(${service}_status)
+.		if !target(${service}_status)
 ${service}_status: ${_SERVICE_STATUS}
-.	endif
+.		endif
 
 # Service exit targets
-.	if !target(${service}_exit)
+.		if !target(${service}_exit)
 ${service}_exit: ${_SERVICE_EXIT} ${DAEMON_${service}_DEPS:S/$/_exit/}
-.	endif
+.		endif
 
 DAEMON_EXIT: ${service}_exit
+.	endif
 .endfor
 
 .MAIN: ${SCRIPTS} ${TARGETS}

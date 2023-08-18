@@ -1,10 +1,13 @@
 # vim:ft=make:
 
-# command to start service
-DAEMON_example_COMMAND?=/path/service
-
 # flags to force daemonizing
 DAEMON_example_BACKGROUND?=
+
+# default working directory
+DAEMON_example_CWD?=/some/path
+
+# command to start service
+DAEMON_example_COMMAND?=/path/service
 
 # enabled by default?
 DAEMON_example_ENABLE?=no
