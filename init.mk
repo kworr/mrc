@@ -217,10 +217,10 @@ NETWORK_EXIT: nfsclient_exit
 netif: adjkerntz wlans cloned kld mounttmpfs utmpx
 	echo "MRC:$@> Starting interfaces: ${IFCONFIG_IFACES}"
 .for iface in ${IFCONFIG_IFACES}
-.for item in ${IFCONFIG_${iface}:tW:ts;}
+.	for item in ${IFCONFIG_${iface}:tW:ts;}
 	ifconfig ${iface} ${item}
-.endfor
-.undef _IFCONFIG_ARGS
+.	endfor
+.	undef _IFCONFIG_ARGS
 .endfor
 
 pf: pflogd

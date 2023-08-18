@@ -6,12 +6,18 @@ _service_check: .USEBEFORE
 	# check whether service is enabled
 	if [ -z "$${DAEMON_$@_ENABLE}" -a -z "${FORCE}" ]; then \
 		exit 0 ;\
-	fi
+	fi ;\
+	for CMD in ${DAEMON_$@_COMMAND}; do \
+		if [ -x $${CMD} ]; then \
+			export CMD ;\
+			break ;\
+		fi ;\
+	done ;\
+	echo $${CMD}
 
 _service_pre: .USEBEFORE
-	echo "MRC:$@> Starting service."
-
 	# kldload modules if any
+	echo "MRC:$@> Starting service." ;\
 	if [ -n "${DAEMON_$@_MODULES}" ]; then \
 		kldload -n ${DAEMON_$@_MODULES}; \
 	fi

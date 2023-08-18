@@ -1,5 +1,5 @@
 _service_plain: .USE
-	chroot -u ${DAEMON_$@_USER} -g ${DAEMON_$@_GROUP} ${DAEMON_$@_CWD} ${DAEMON_$@_COMMAND} ${DAEMON_$@_FLAGS} ${DAEMON_$@_BACKGROUND}
+	chroot -u ${DAEMON_$@_USER} -g ${DAEMON_$@_GROUP} ${DAEMON_$@_CWD} $${CMD} ${DAEMON_$@_FLAGS} ${DAEMON_$@_BACKGROUND}
 
 _service_status: .USE
 	echo "Plain service status doesn't work right now."
