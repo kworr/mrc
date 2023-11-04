@@ -1,5 +1,4 @@
 DAEMON_mountd_COMMAND?=/sbin/mountd
-DAEMON_mountd_ENABLE?=no
 DAEMON_mountd_FLAGS?=-r
 
 .if empty(DAEMON_mountd_ENABLE:tl:Mno)

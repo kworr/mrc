@@ -1,5 +1,4 @@
 DAEMON_automountd_COMMAND?=/usr/sbin/automountd
-DAEMON_automountd_ENABLE?=no
 DAEMON_automountd_MODULES=autofs
 
 automountd: ${_SERVICE} # nfsclient -> DAEMON

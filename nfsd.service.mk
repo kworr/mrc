@@ -1,8 +1,7 @@
 DAEMON_nfsd_COMMAND?=/sbin/nfsd
-DAEMON_nfsd_ENABLE?=no
 DAEMON_nfsd_FLAGS?=-u -t -n 4
 
-.if empty(DAEMON_nfsd_ENABLE:tl:Mno)
+.if empty(DAEMON_nfsd_ENABLE:Uno:tl:Mno)
 DAEMON_mountd_DEPS+=nfsd
 DAEMON_rpcbind_DEPS+=nfsd
 
