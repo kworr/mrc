@@ -13,7 +13,7 @@ MAKEINIT="make -D AUTOBOOT -C /etc/mrc -k"
 NCPU=$((`/sbin/sysctl -n hw.ncpu` + 1 ))
 #MAKEDEBUG="-d -nelLx"
 
-if mount -t tmpfs tmpfs /etc/mrc/tmp; then
+if mkdir -p /etc/mrc/tmp && mount -t tmpfs tmpfs /etc/mrc/tmp; then
   ${MAKEINIT} -j ${NCPU} ${MAKEDEBUG} -X TMPDIR=/etc/mrc/tmp && umount -f /etc/mrc/tmp
 else
   ${MAKEINIT}
