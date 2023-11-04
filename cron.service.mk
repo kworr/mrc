@@ -1,4 +1,4 @@
 DAEMON_cron_COMMAND?=/usr/sbin/cron
-DAEMON_cron_FLAGS?=-s
+DAEMON_cron_ENABLE?=yes
 
-cron: ${_SERVICE} LOGIN
+cron: ${_SERVICE}
