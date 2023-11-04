@@ -8,15 +8,15 @@ _service_check: .USEBEFORE
 		exit 0 ;\
 	fi
 	# check for first present executable
-	for COMMAND in ${DAEMON_$@_COMMAND}; do \
-		if [ -x $${COMMAND} ]; then \
-			export CMD="${COMMAND}" ;\
+	for CHECK_CMD in ${DAEMON_$@_COMMAND}; do \
+		if [ -x $${CHECK_CMD} ]; then \
+			export CMD="$${CHECK_CMD}" ;\
 			break ;\
 		fi ;\
 	done
 	# bail out if binary not found
 	if [ -z $${CMD} ]; then \
-		MRC:$@> Executable not found.
+		echo "MRC:$@> Executable not found." ;\
 		exit 0 ;\
 	fi
 	# check for rtprio/idprio
