@@ -21,15 +21,22 @@ DAEMON_example_FOREGROUND?=
 # group to run service as
 DAEMON_example_GROUP?=wheel
 
+# lower process priority by using `idprio`
+DAEMON_example_IDPRIO?=
+
 # kernel modules to load prior to service start
 DAEMON_example_MODULES?=
+
+# raise process priority by using `rtprio`
+# (IDPRIO setting takes precedence if set)
+DAEMON_example_RTPRIO?=
 
 # user to run service as
 DAEMON_example_USER?=root
 
 # extra commands to execute before starting service
-# ${_SERVICE} - starts after root mount appear
-# ${_EARLYSERVICE} - not required on early boot
+# ${_EARLYSERVICE} - starts after root mount appear
+# ${_SERVICE} - not required on early boot
 # you also can select specific starter by inheriting class by full name:
 # ${_(EARLY)?SERVICE(_(SVC|DAEMON|PLAIN))?}
 

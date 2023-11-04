@@ -6,14 +6,25 @@ _service_check: .USEBEFORE
 	# check whether service is enabled
 	if [ -z "$${DAEMON_$@_ENABLE}" -a -z "${FORCE}" ]; then \
 		exit 0 ;\
-	fi ;\
-	for CMD in ${DAEMON_$@_COMMAND}; do \
-		if [ -x $${CMD} ]; then \
-			export CMD ;\
+	fi
+	# check for first present executable
+	for COMMAND in ${DAEMON_$@_COMMAND}; do \
+		if [ -x $${COMMAND} ]; then \
+			export CMD="${COMMAND}" ;\
 			break ;\
 		fi ;\
-	done ;\
-	echo $${CMD}
+	done
+	# bail out if binary not found
+	if [ -z $${CMD} ]; then \
+		MRC:$@> Executable not found.
+		exit 0 ;\
+	fi
+	# check for rtprio/idprio
+	if [ -n "$${DAEMON_$@_IDPRIO}" ]; then \
+		export CMD="/usr/sbin/idprio $${DAEMON_$@_IDPRIO} $${CMD}" ;\
+	elif [ -n "$${DAEMON_$@_RTPRIO}" ]; then \
+		export CMD="/usr/sbin/rtprio $${DAEMON_$@_RTPRIO} $${CMD}" ;\
+	fi
 
 _service_pre: .USEBEFORE
 	# kldload modules if any
