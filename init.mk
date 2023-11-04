@@ -21,7 +21,7 @@ SERVICE: netif mount random hostname cleanvar
 
 adjkerntz: random mount
 	echo "MRC:$@> Adjust kernel timezone."
-	adjkerntz -i
+	adjkerntz -i &
 
 bootfs: fsck
 	echo "MRC:$@> Checking whether we need /boot mounted."
