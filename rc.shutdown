@@ -13,7 +13,8 @@ MAKEINIT="make -D AUTOBOOT -C /etc/mrc -k"
 NCPU=$((`/sbin/sysctl -n hw.ncpu` + 1 ))
 #MAKEDEBUG="-d -nelLx"
 
-mount -t tmpfs tmpfs /etc/mrc/tmp && ${MAKEINIT} -j ${NCPU} ${MAKEDEBUG} -X TMPDIR=/etc/mrc/tmp EXIT && umount /etc/mrc/tmp || ${MAKEINIT} EXIT
+mount -t tmpfs tmpfs /etc/mrc/tmp && ${MAKEINIT} -j ${NCPU} ${MAKEDEBUG} -X TMPDIR=/etc/mrc/tmp EXIT && umount /etc/mrc/tmp ||\
+  { echo EXIT failed repeating nonparallel in 10 seconds ; sleep 10 ; ${MAKEINIT} EXIT ; }
 
 echo '.'
 exit 0

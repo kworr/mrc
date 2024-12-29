@@ -23,6 +23,10 @@ FSCK_Y_ENABLE?=no
 # hostname
 HOSTNAME?=Amnesiac
 
+# HAS_INET6
+HAS_INET6?=${:!sysctl -q net.inet6 >/dev/null && echo yes || echo no!}
+PREFER?=IPV6 # or IPV4
+
 # kld
 KLD_LIST?=
 

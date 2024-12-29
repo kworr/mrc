@@ -7,5 +7,6 @@ _service_svc_status: .USE
 	svc status ${@:S/_status//}
 
 _service_svc_exit: .USEBEFORE
-	svc list ${@:S/_exit//} | grep -q ${@:S/_exit//} || true && \
+	#svc list ${@:S/_exit//} | grep -q ${@:S/_exit//} || true &&
+	lockf -kst 0 /var/run/service.${@:S/_exit//}.pid svc -t 0 kill ${@:S/_exit//} || \
 		svc -s exit ${@:S/_exit//}
