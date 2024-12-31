@@ -187,7 +187,7 @@ microcode: mountlate
 		fi \
 	fi
 
-mixer: mount cleanvar kld
+mixer: mount cleanvar kld sysctl
 	echo "MRC:$@> Restoring levels."
 	for mixer in $$(find /dev -name 'mixer*' | sed 's|^/dev/||'); do \
 		if [ -r /var/db/$${mixer}-state ]; then \
@@ -386,11 +386,11 @@ mounttmpfs: cleanvar
 
 udevd_check: DAEMON
 	echo "MRC:$@> Check udevd PID/socket are accessible."
-	if [ ! -e /var/run/udevd.pid ]; then \
+	if [ ! -e /var/run/udevd.pid -o ! -e /tmp/udevd.socket ]; then \
 		pkill -HUP -x udevd; \
 		( \
 			sleep 1; \
-			if [ ! -e /var/run/udevd.pid ]; then \
+			if [ ! -e /var/run/udevd.pid -o ! -e /tmp/udevd.socket ]; then \
 				svc restart udevd; \
 			fi \
 		) & \
