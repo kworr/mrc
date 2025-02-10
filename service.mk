@@ -18,7 +18,7 @@ DAEMON_${service}_GROUP?=	wheel
 
 # Service creation targets
 .		if !target(${service})
-${service}: ${SERVICE_EXIT} ${_SERVICE}
+${service}: ${service}_exit ${_SERVICE}
 .		endif
 
 # Service status targets
