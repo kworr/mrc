@@ -302,6 +302,7 @@ random: mount devfs
 	sysctl kern.seedenable=0 > /dev/null
 
 random_exit:
+	echo "MRC:$@> Saving entropy."
 	rm -f ${ENTROPY_FILE}; \
 	( \
 		umask 077; \
