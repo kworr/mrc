@@ -18,8 +18,12 @@ DAEMON_${service}_GROUP?=	wheel
 
 # Service creation targets
 .		if !target(${service})
-${service}: ${service}_exit ${_SERVICE}
+${service}: ${service}_exit ${_SERVICE} ${service}_after
 .		endif
+#
+# Service part that runs after daemonization, we are just turning them
+# to macros and making sure they exist
+${service}_after: .USE
 
 # Service status targets
 .		if !target(${service}_status)
