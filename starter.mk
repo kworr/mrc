@@ -42,16 +42,21 @@ Starter:=${starter:tu}
 
 OTHER_TARGETS:=${OTHER_TARGETS} _service_${starter} _service_${starter}_exit _service_${starter}_status
 
+# here we are inheriting pieces of different targets into one single target, so
+# everything is appended in the order, but gets organized a little bit
+# differently, all targets with .USEBEFORE are added before current target
+# script, so after "_service_pre _service_check" we got that order inverted
+
 _SERVICE_${Starter}:=_service_pre DAEMON _service_${starter} _service_check
 _EARLYSERVICE_${Starter}:=_service_pre SERVICE _service_${starter} _service_check
 _SERVICE_${Starter}_EXIT:=_service_${starter}_exit _service_post_exit
 
-.if "${STARTER}" == "${starter}"
+.	if "${STARTER}" == "${starter}"
 _SERVICE:=_service_pre DAEMON _service_${starter} _service_check
 _EARLYSERVICE:=_service_pre SERVICE _service_${starter} _service_check
 _SERVICE_EXIT:=_service_${starter}_exit _service_post_exit
-.endif
+.	endif
 
-.export
-.include "${starter_source}"
+.	export
+.	include "${starter_source}"
 .endfor
