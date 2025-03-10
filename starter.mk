@@ -19,6 +19,8 @@ _service_check: .USEBEFORE
 		echo "MRC:$@> Executable not found." ;\
 		exit 0 ;\
 	fi
+
+_service_check_start: .USEBEFORE
 	# check for rtprio/idprio
 	if [ -n "$${DAEMON_$@_IDPRIO}" ]; then \
 		export CMD="/usr/sbin/idprio $${DAEMON_$@_IDPRIO} $${CMD}" ;\
@@ -47,16 +49,16 @@ OTHER_TARGETS:=${OTHER_TARGETS} _service_${starter} _service_${starter}_exit _se
 # differently, all targets with .USEBEFORE are added before current target
 # script, so after "_service_pre _service_check" we got that order inverted
 
-_SERVICE_${Starter}:=_service_pre DAEMON _service_${starter} _service_check
-_EARLYSERVICE_${Starter}:=_service_pre SERVICE _service_${starter} _service_check
-_SERVICE_${Starter}_EXIT:=_service_${starter}_exit _service_post_exit
+_SERVICE_${Starter}:=_service_pre DAEMON _service_${starter} _service_check_start _service_check
+_EARLYSERVICE_${Starter}:=_service_pre SERVICE _service_${starter} _service_check_start _service_check
+_SERVICE_${Starter}_EXIT:=_service_${starter}_exit _service_post_exit _service_check
 
 .	if "${STARTER}" == "${starter}"
-_SERVICE:=_service_pre DAEMON _service_${starter} _service_check
-_EARLYSERVICE:=_service_pre SERVICE _service_${starter} _service_check
-_SERVICE_EXIT:=_service_${starter}_exit _service_post_exit
+_SERVICE:=${_SERVICE_${Starter}}
+_EARLYSERVICE:=${_EARLYSERVICE_${Starter}}
+_SERVICE_EXIT:=${_SERVICE_${Starter}_EXIT}
 .	endif
 
-.	export
+.	export-all
 .	include "${starter_source}"
 .endfor

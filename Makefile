@@ -1,7 +1,7 @@
 .include "defaults.mk"
 .include "order.mk"
 .include "/etc/mrc.mk"
-.export
+.export-all
 
 .MAKE.JOBS?=	${NCPU}
 .if !empty(.MAKE.MODE:Mcompat)
@@ -44,5 +44,5 @@ ENABLED:=${:!env!:C/=.*//:M*_ENABLE}
 
 .undef ENABLED
 .unexport-env
-.export
+.export-all
 #.info ${:!env!}
